@@ -16,28 +16,6 @@ implement of mytar.c
 
 #define BLOCK_SIZE 512
 
-struct Header{
-    /* Header structure
-     * Everything is chars because they are either names or strings
-     * that portray octal number */
-    char name[100];
-    char mode[8];
-    char uid[8];
-    char gid[8];
-    char size[12];
-    char mtime[12];
-    char chksum[8];
-    char typeflag;
-    char linkname[100];
-    char magic[6];
-    char version[2];
-    char uname[32];
-    char gname[32];
-    char devmajor[8];
-    char devminor[8];
-    char prefix[155];
-};
-
 
 void init_Header(struct Header *head){
     /* Initializes the header */
@@ -92,7 +70,7 @@ struct Header *create_header(char *fileName, char option){
     pwd = getpwuid(file.st_uid);
     strcpy(head->uname, pwd->pw_name);
     strcpy(head->gname, grp->gr_name);
-
+    /*NEED TO CHECK THE LENGTH OF EVERYTHING, NOT JUST THE PATH*/
     if (length <= 256 || option == 'S'){
         for (i = length; i > -1; i--){
             if (fileName[i] == '/'){
@@ -219,6 +197,7 @@ void writebody(int fdout, char* path){
     char readBuf[BLOCK_SIZE];
     int fdin;
     int readSize;
+    int i;
 
     /*Open read file*/
     if(!(fdin = open(path, O_APPEND, 0666))){
@@ -228,6 +207,13 @@ void writebody(int fdout, char* path){
 
     /*While 512 bye blocks exist in read file*/
     while((readSize = read(fdin, readBuf, BLOCK_SIZE))){
+        /*If if on last block, pad with 0's*/
+        if(readSize < BLOCK_SIZE){
+            for(i=readSize;i<(BLOCK_SIZE);i++){
+                readBuf[i] = '\0';
+            }
+        }
+        /*Write block*/
         write(fdout, readBuf, BLOCK_SIZE);
     }
 
@@ -239,6 +225,37 @@ void writebody(int fdout, char* path){
 
 }
 
-void writeheader(char filname, char option){
-    
+void writeheader(int fdout, char* filename, char option){
+    /*Define variables*/
+    int fdin;
+    struct Header* head;
+    int lengths[] = [100,8,8,8,12,12,8,1,100,6,2,32,32,8,8,155];
+    int entries = 16;
+
+    /*Create header object*/
+    head = create_header(filename, option);
+
+    /*Write header variables in order to file*/
+    write(fdout, head, 512);
+    /*
+    write(fdout, head->name, lengths[0]);
+    write(fdout, head->mode, lengths[1]);
+    write(fdout, head->uid, lengths[2]);
+    write(fdout, head->gid, lengths[3]);
+    write(fdout, head->size, lengths[4]);
+    write(fdout, head->mtime, lengths[5]);
+    write(fdout, head->chksum, lengths[6]);
+    write(fdout, head->typeflag, lengths[7]);
+    write(fdout, head->linkname, lengths[8]);
+    write(fdout, head->magic, lengths[9]);
+    write(fdout, head->version, lengths[10]);
+    write(fdout, head->uname, lengths[11]);
+    write(fdout, head->gname, lengths[12]);
+    write(fdout, head->devmajor, lengths[13]);
+    write(fdout, head->devminor, lengths[14]);
+    write(fdout, head->prefix, lengths[15]);
+    */
+
+    free(head);
+
 }
