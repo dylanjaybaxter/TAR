@@ -43,37 +43,37 @@ struct Header{
     char prefix[155];
 };
 
-char *octalConvert(unsigned int n, char *octal){
+char *octalConvert(unsigned int n, char *octal[]){
     /* Takes a char pointer of a given size and creates an octal number
      * from the given integer.  */
     int i = 0;
     while (n != 0){
-        octal[i] = 48 + (n % 8);
+        octal[0][i] = 48 + (n % 8);
         n = n / 8;
         i++;   
     } 
     int length = i;
     int j;
-    int templen = strlen(octal);
+    int templen = strlen(octal[0]); 
     char *temp = (char*) malloc(templen * sizeof(char));
-    strcpy(temp, octal);
+    strcpy(temp, octal[0]);
     for (j = length - 1, i = 0; i < length; i++, j--){
-        octal[i] = temp[j];
+        octal[0][i] = temp[j];
     }
     free(temp);
-    return octal;
+    return octal[0];
 }
 
 void init(struct Header *head){
     /* Initializes the header */
-    char *smallOct = (char *) malloc(8);
-    char *bigOct = (char *) malloc(12);
-    head->mode = octalConvert(0, smallOct);
-    head->uid = octalConvert(0, smallOct);
-    head->gid = octalConvert(0, smallOct);
-    head->size = octalConvert(0, bigOct);
-    head->mtime = octalConvert(0, bigOct);
-    head->chksum = octalConvert(0, smallOct);
+    char smallOct[8] = {0};
+    char bigOct[12] = {0};
+    strcpy(head->mode, smallOct);
+    strcpy(head->uid, smallOct);
+    strcpy(head->gid, smallOct);
+    strcpy(head->size, bigOct);
+    strcpy(head->mtime, bigOct);
+    strcpy(head->chksum, smallOct);
     head->typeflag = '0';
     strcpy(head->name, "0");
     strcpy(head->linkname, "0");
@@ -82,19 +82,17 @@ void init(struct Header *head){
     head->version[1] = '0';
     strcpy(head->uname, "0");
     strcpy(head->gname, "0");
-    head->devmajor = octalConvert(0, smallOct);
-    head->devminor = octalConvert(0, smallOct);
+    strcpy(head->devmajor, smallOct);
+    strcpy(head->devminor, smallOct);
     strcpy(head->prefix, "0");
-    free(smallOct);
-    free(bigOct);
 }
 
 struct Header *create_header(char *fileName, char option){
     /* Takes the given file name and creates a header. It also takes in an
      * option variable to check if the Strict mode has been set */
     struct Header *head = (struct Header *) malloc(sizeof(struct Header));
-    char *smallOct = (char *) malloc(8); /* Max Octal Size for multiple vars */
-    char *bigOct = (char *) malloc(12); /* Max OCtal Size for larger vars */
+    char smallOct[8] = {0}; /* Max Octal Size for multiple vars */
+    char bigOct[12] = {0}; /* Max OCtal Size for larger vars */
     init(head);
     int length = strlen(fileName);
     int i;
@@ -103,11 +101,11 @@ struct Header *create_header(char *fileName, char option){
     struct stat file;
     lstat(fileName, &file);
     
-    head->mode = octalConvert(file.st_mode, smallOct);
-    head->uid = octalConvert(file.st_uid, smallOct);
-    head->gid = octalConvert(file.st_gid, smallOct);
-    head->size = octalConvert(file.st_size, bigOct);
-    head->mtime = octalConvert(file.st_mtime, bigOct);
+    strcpy(head->mode, octalConvert(file.st_mode, smallOct));
+    strcpy(head->uid, octalConvert(file.st_uid, smallOct));
+    strcpy(head->gid, octalConvert(file.st_gid, smallOct));
+    strcpy(head->size, octalConvert(file.st_size, bigOct));
+    strcpy(head->mtime, octalConvert(file.st_mtime, bigOct));
     
     struct group *grp;
     struct passwd *pwd;
@@ -135,8 +133,6 @@ struct Header *create_header(char *fileName, char option){
        perror("File name is too long");
        exit(EXIT_FAILURE);
     }
-    free(smallOct);
-    free(bigOct);
     return head;
 }
 
