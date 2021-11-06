@@ -29,3 +29,7 @@ char *octalConvert(unsigned int n, char *octal){
     free(temp);
     return octal;
 }
+
+int isTAR(char* path){
+    return 0;
+}

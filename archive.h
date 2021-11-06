@@ -42,11 +42,11 @@ void init_Header(struct Header *head);
 
 struct Header *create_header(char *fileName, char option);
 
-void createArchive(char* dest, char** path, int pathCount);
+void createArchive(char* dest, char** paths, int pathCount, int options);
 
-void writeRecur(int fd, char* path);
+void writeRecur(int fd, char* path, int options);
 
-void writeheader(int fd, char* path);
+void writeheader(int fd, char* path, int options);
 
 void writebody(int fd, char* path);
 

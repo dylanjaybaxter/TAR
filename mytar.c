@@ -28,7 +28,9 @@ implement of mytar.c
 
 int main(int argc, char* const argv[]){
     char* opts = argv[0];
+    uint16_t optMask = 0;
     char opt;
+    int i;
     for(i=0;i<(int)strlen(opts);i++){
         opt = opts[i];
       /*Flag create, stop if print or extrac*/
@@ -82,7 +84,7 @@ int main(int argc, char* const argv[]){
             paths[i] = argv[i];
             pathCount++;
         }
-        createArchive(dest, paths, pathCount);
+        createArchive(dest, paths, pathCount, optMask);
     }
     else if(optMask & PRINT){
         path = argv[2];
