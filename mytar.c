@@ -6,9 +6,13 @@ Description: This file contains main functionality for home
 implement of mytar.c
 */
 #include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
 #include<stdint.h>
 #include<getopt.h>
 #include<unistd.h>
+#include"archive.h"
+#include"arch_helper.h"
 #define CREATE 0x01
 #define PRINT 0x02
 #define EXTRACT 0x04
@@ -18,34 +22,92 @@ implement of mytar.c
 
 int main(int argc, char* const argv[]){
     uint16_t optMask = 0;
-    int opt;
+    int i;
 
     /*Iterate through options and assign flags*/
-    while((opt = getopt(argc, argv,":cxtvfS:")) != -1){
-      /**/
+    char* opts = argv[0];
+    char opt;
+    for(i=0;i<(int)strlen(opts);i++){
+        opt = opts[i];
+      /*Flag create, stop if print or extrac*/
       if(opt == 'c'){
           optMask = CREATE;
       }
-      /*check for missing number*/
+      /*flag table*/
       else if(opt == 't'){
           optMask = PRINT;
       }
+      /*Flag Extract*/
       else if(opt == 'x'){
           optMask = EXTRACT;
       }
+      /*Flag verbose*/
       else if(opt == 'v'){
           optMask = optMask|VERBOSE;
       }
+      /*flag filename argument*/
       else if(opt == 'f'){
           optMask = optMask|FILENAME;
       }
+      /*flag strict compilation*/
       else if(opt == 'S'){
           optMask = optMask|STRICT;
       }
+      /*Reject any other argument*/
+      else{
+          printf("Usage: tar [txvfS] [dest] [paths to tar]");
+          exit(EXIT_FAILURE);
+      }
+  }
 
-    for(;optind < argc; optind++){
-
-
+    /*Initialize Variables for destination and assign*/
+    char* dest;
+    if(optMask & FILENAME){
+        dest = argv[1];
+    }else{
+        printf("Absent f not supported");
+        exit(EXIT_FAILURE);
     }
+
+    /*Initialize vars for actions*/
+    char* path;
+    char* paths[argc-2];
+    int pathCount =0;
+
+    /*For the remainder of arguments, Perform action*/
+    if(optMask & CREATE){
+        for(i=2;i < argc; i++){
+            paths[i] = argv[i];
+            pathCount++;
+        }
+        createArchive(dest, paths, pathCount);
+    }
+    else if(optMask & PRINT){
+        path = argv[2];
+        /*Print the contents of the tar file*/
+        if(isTAR(path)){
+            printTAR(1,path);
+        }
+        else{
+            printf("This is not a TAR file");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if(optMask & EXTRACT){
+        path = argv[2];
+        /*Check if the file is a TAR file*/
+        if(isTAR(path)){
+            extractArchive(dest, path);
+        }
+        else{
+            printf("This is not a TAR file");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else{
+        printf("You never should have come here\n");
+        exit(EXIT_FAILURE);
+    }
+
     return 0;
 }
