@@ -59,17 +59,36 @@ struct Header *create_header(char *fileName, char option){
 
     /*Write Name and Prefix*/
     char name[100];
+    char fileTemp[256];
+    strcpy(fileTemp,fileName);
+    /*Append slash to directories*/
+    if(S_ISDIR(file.st_mode)){
+        length = length+1;
+        if(length<256){
+            fileTemp[length-1] = '/';
+            fileTemp[length] = '\0';
+        }
+        else{
+           perror("File name is too long");
+           exit(EXIT_FAILURE);
+        }
+    }
+
+    /*Read filname into buffers*/
     if (length <= 256 || option == 'S'){
         for (i = 0; i < 100; i++){
-            name[i] = fileName[i];
-            if(fileName[i] == '\0'){
+            name[i] = fileTemp[i];
+            if(fileTemp[i] == '\0'){
                 break;
             }
         }
         char pre[155] = {0};
         if (i == 100){
             for (; i < 256; i++){
-                pre[i-100] = fileName[i];
+                pre[i-100] = fileTemp[i];
+                if(fileTemp[i] == '\0'){
+                    break;
+                }
             }
         }
         strcpy(head->name, name);
@@ -147,7 +166,7 @@ struct Header *create_header(char *fileName, char option){
     for(i=0;i<BLOCK_SIZE;i++){
         memset(head->chksum, ' ', 8);
         if(*countPt){
-            checksum = checksum + 1;
+            checksum = checksum+*countPt;
         }
         countPt++;
     }
