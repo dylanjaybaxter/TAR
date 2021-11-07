@@ -33,3 +33,16 @@ char *octalConvert(unsigned int n, char *octal){
 int isTAR(char* path){
     return 0;
 }
+
+int insert_special_int(char *where, size_t size, int32_t val){
+    int err=0;
+
+    if (val < 0 || (size < sizeof(val))){
+        err++;
+    } else {
+        memset(where, 0, size);
+        *(int32_t *)(where+size-sizeof(val)) = htonl(val);
+        *where |= 0x80;
+    }
+    return err;
+}

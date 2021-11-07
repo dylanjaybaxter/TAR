@@ -55,18 +55,24 @@ struct Header *create_header(char *fileName, char option){
     struct stat file;
     lstat(fileName, &file);
 
-    strcpy(head->mode, octalConvert(file.st_mode, smallOct));
-    strcpy(head->uid, octalConvert(file.st_uid, smallOct));
-    strcpy(head->gid, octalConvert(file.st_gid, smallOct));
-    strcpy(head->size, octalConvert(file.st_size, bigOct));
-    strcpy(head->mtime, octalConvert(file.st_mtime, bigOct));
-
     struct group *grp;
     struct passwd *pwd;
     grp = getgrgid(file.st_gid);
     pwd = getpwuid(file.st_uid);
     strcpy(head->uname, pwd->pw_name);
     strcpy(head->gname, grp->gr_name);
+
+    char *usableUID;
+    if(!(insert_special_int(usableUID, 8, file.st_mode))){
+        perror("insert_special_int");
+        exit(EXIT_FAILURE);
+    }
+
+    strcpy(head->mode, octalConvert(file.st_mode, smallOct));
+    strcpy(head->uid, usableUID);
+    strcpy(head->gid, octalConvert(file.st_gid, smallOct));
+    strcpy(head->size, octalConvert(file.st_size, bigOct));
+    strcpy(head->mtime, octalConvert(file.st_mtime, bigOct));
 
     if (length <= 256 || option == 'S'){
         for (i = length; i > -1; i--){
