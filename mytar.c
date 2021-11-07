@@ -25,7 +25,6 @@ implement of mytar.c
 #define FILENAME 0x10
 #define STRICT 0x20
 
-
 int main(int argc, char* const argv[]){
     char* opts = argv[0];
     uint16_t optMask = 0;
@@ -63,55 +62,5 @@ int main(int argc, char* const argv[]){
           exit(EXIT_FAILURE);
       }
   }
-
-    /*Initialize Variables for destination and assign*/
-    char* dest;
-    if(optMask & FILENAME){
-        dest = argv[1];
-    }else{
-        printf("Absent f not supported");
-        exit(EXIT_FAILURE);
-    }
-
-    /*Initialize vars for actions*/
-    char* path;
-    char* paths[argc-2];
-    int pathCount =0;
-
-    /*For the remainder of arguments, Perform action*/
-    if(optMask & CREATE){
-        for(i=2;i < argc; i++){
-            paths[i] = argv[i];
-            pathCount++;
-        }
-        createArchive(dest, paths, pathCount, optMask);
-    }
-    else if(optMask & PRINT){
-        path = argv[2];
-        /*Print the contents of the tar file*/
-        if(isTAR(path)){
-            printTAR(1,path);
-        }
-        else{
-            printf("This is not a TAR file");
-            exit(EXIT_FAILURE);
-        }
-    }
-    else if(optMask & EXTRACT){
-        path = argv[2];
-        /*Check if the file is a TAR file*/
-        if(isTAR(path)){
-            extractArchive(dest, path);
-        }
-        else{
-            printf("This is not a TAR file");
-            exit(EXIT_FAILURE);
-        }
-    }
-    else{
-        printf("You never should have come here\n");
-        exit(EXIT_FAILURE);
-    }
-
-    return 0;
+  return 0;
 }

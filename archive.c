@@ -12,6 +12,10 @@ implement of mytar.c
 #include <fcntl.h>
 #include <dirent.h>
 #include <limits.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <grp.h>
+#include <pwd.h>
 #include "archive.h"
 
 #define BLOCK_SIZE 512
@@ -54,7 +58,7 @@ struct Header *create_header(char *fileName, char option){
 
     struct stat file;
     lstat(fileName, &file);
-
+    
     struct group *grp;
     struct passwd *pwd;
     grp = getgrgid(file.st_gid);
