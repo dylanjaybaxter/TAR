@@ -21,8 +21,8 @@ implement of mytar.c
 
 void init_Header(struct Header *head){
     /* Initializes the header */
-    char smallOct[8] = {0};
-    char bigOct[12] = {0};
+    char smallOct[8] = {'\0'};
+    char bigOct[12] = {'\0'};
     strcpy(head->mode, smallOct);
     strcpy(head->uid, smallOct);
     strcpy(head->gid, smallOct);
@@ -31,37 +31,84 @@ void init_Header(struct Header *head){
     strcpy(head->chksum, smallOct);
     head->typeflag = '0';
     strcpy(head->name, "0");
-    strcpy(head->linkname, "0");
+    fillArray(head->linkname, 0, 100);
     strcpy(head->magic, "ustar");
     head->version[0] = '0';
     head->version[1] = '0';
-    strcpy(head->uname, "0");
-    strcpy(head->gname, "0");
+    fillArray(head->uname, 0,32);
+    fillArray(head->gname, 0,32);
     strcpy(head->devmajor, smallOct);
     strcpy(head->devminor, smallOct);
-    strcpy(head->prefix, "0");
+    fillArray(head->prefix, 0, 100);
 }
 
 struct Header *create_header(char *fileName, char option){
     /* Takes the given file name and creates a header. It also takes in an
      * option variable to check if the Strict mode has been set */
     struct Header *head = (struct Header *) malloc(sizeof(struct Header));
-    char smallOct[8] = {0}; /* Max Octal Size for multiple vars */
-    char bigOct[12] = {0}; /* Max OCtal Size for larger vars */
+    char smallOct[8] = {0}; /* Max Octal Size for 8 byte vars */
+    char bigOct[12] = {0}; /* Max Octal Size for 12 byte vars */
     init_Header(head);
     int length = strlen(fileName);
     int i;
-    int index;
+    int checksum = 0;
 
+    /*Stat file*/
     struct stat file;
     lstat(fileName, &file);
 
-    strcpy(head->mode, octalConvert(file.st_mode, smallOct));
-    strcpy(head->uid, octalConvert(file.st_uid, smallOct));
-    strcpy(head->gid, octalConvert(file.st_gid, smallOct));
-    strcpy(head->size, octalConvert(file.st_size, bigOct));
-    strcpy(head->mtime, octalConvert(file.st_mtime, bigOct));
+    /*Write Name and Prefix*/
+    char name[100];
+    if (length <= 256 || option == 'S'){
+        for (i = 0; i < 100; i++){
+            name[i] = fileName[i];
+            if(fileName[i] == '\0'){
+                break;
+            }
+        }
+        char pre[155] = {0};
+        if (i == 100){
+            for (; i < 256; i++){
+                pre[i-100] = fileName[i];
+            }
+        }
+        strcpy(head->name, name);
+        strcpy(head->prefix, pre);
+    }
+    else{
+       perror("File name is too long");
+       exit(EXIT_FAILURE);
+    }
 
+    /*Write mode*/
+    memset(smallOct, '0', 8);
+    strcpy(head->mode, octalConvert(file.st_mode, smallOct, 8));
+
+    /*Convert usable and write uid*/
+    char usableUID[8];
+    if(insert_special_int(usableUID, 8, file.st_uid)){
+        perror("insert_special_int");
+        exit(EXIT_FAILURE);
+    }
+    memset(smallOct, '0', 8);
+    strcpy(head->uid, usableUID);
+
+    /*Write gid*/
+    memset(smallOct, '0', 8);
+    strcpy(head->gid, octalConvert(file.st_gid, smallOct, 8));
+
+    /*See Size at dependent*/
+
+    /*Write mtime*/
+    memset(bigOct, 0, 12);
+    strcpy(head->mtime, octalConvert(file.st_mtime, bigOct, 12));
+
+    /*See Checksum at End*/
+    /*See TypeFlag at dependent*/
+    /*See Linkname at dependent*/
+    /*See magic num & version in init*/
+
+    /*Write Group and Password*/
     struct group *grp;
     struct passwd *pwd;
     grp = getgrgid(file.st_gid);
@@ -69,25 +116,43 @@ struct Header *create_header(char *fileName, char option){
     strcpy(head->uname, pwd->pw_name);
     strcpy(head->gname, grp->gr_name);
 
-    if (length <= 256 || option == 'S'){
-        for (i = length; i > -1; i--){
-            if (fileName[i] == '/'){
-                index = i + 1;
-            }
-        }
-        char pre[155] = {0};
-        if (index - 1 > 0){
-            for (i = 0; i < (index = 1); i++){
-                pre[i] = fileName[i];
-            }
-        }
-        strcpy(head->name, fileName + index);
-        strcpy(head->prefix, pre);
+    /*No Dev Major/Minor*/
+    /*See prefix at beginning*/
+
+    /*Type Dependant Fields*/
+    if(S_ISREG(file.st_mode)){
+        head->typeflag = '0';
+        memset(bigOct, 0, 8);
+        strcpy(head->size, octalConvert(file.st_size, bigOct, 12));
     }
-    else{
-       perror("File name is too long");
-       exit(EXIT_FAILURE);
+    else if(S_ISDIR(file.st_mode)){
+        head->typeflag = '5';
+        memset(bigOct, '0', 8);
+        strcpy(head->size, octalConvert(0, bigOct, 12));
     }
+    else if(S_ISLNK(file.st_mode)){
+        head->typeflag = '2';
+        struct stat sb;
+        if(stat(fileName, &sb) == -1){
+            perror("STAT");
+            exit(EXIT_FAILURE);
+        }
+        readlink(fileName, head->linkname, 100);
+        memset(bigOct, '0', 8);
+        strcpy(head->size, octalConvert(0, bigOct, 12));
+    }
+
+    /*Count Characters in header and write to checksum*/
+    unsigned char* countPt = (unsigned char*)head;
+    for(i=0;i<BLOCK_SIZE;i++){
+        memset(head->chksum, ' ', 8);
+        if(*countPt){
+            checksum = checksum + 1;
+        }
+        countPt++;
+    }
+    strcpy(head->chksum, octalConvert(checksum, smallOct, 8));
+
     return head;
 }
 
@@ -98,9 +163,9 @@ void createArchive(char* dest, char** paths, int pathCount, int options){
 
     /*Open New TAR File in destination*/
     if(DEBUG){
-        printf("Statting: %s\n", dest);
+        printf("Opening Dest: %s\n", dest);
     }
-    if(!(fd = open(dest, O_CREAT|O_TRUNC, 0666))){
+    if((fd = open(dest, O_CREAT|O_TRUNC|O_WRONLY, 0666)) == -1){
         perror("Open destination");
         exit(EXIT_FAILURE);
     }
@@ -111,7 +176,7 @@ void createArchive(char* dest, char** paths, int pathCount, int options){
         writeRecur(fd, paths[i], options);
     }
 
-    if(!(close(fd))){
+    if(close(fd)){
         perror("Close Dest");
         exit(EXIT_FAILURE);
     }
@@ -179,6 +244,28 @@ void writeRecur(int fd, char* path, int options){
             exit(EXIT_FAILURE);
         }
 
+        /*For every file in the directory*/
+        while((e = readdir(d))){
+            /*Check that new length does not exceed max*/
+            if(*(e->d_name) != '.'){
+                flen = strlen(e->d_name);
+                plen = strlen(path);
+                if((flen+plen) < MAX_PATH_SIZE){
+                    /*Copy the string to the newpath buffer*/
+                    strcpy(newpath, path);
+
+                    /*Add the name to the path*/
+                    newpath = strncat(newpath, "/" , 2);
+                    newpath = strncat(newpath, e->d_name, flen+1);
+
+                    /*Explore the entry*/
+                    writeRecur(fd, newpath, options);
+                }
+                else{
+                    printf("Max path size reached\n");
+                }
+            }
+        }
         /*For every entry in the directory*/
         while((e = readdir(d))){
             /*Check that new length does not exceed max*/
@@ -217,13 +304,13 @@ void writebody(int fdout, char* path){
     int i;
 
     /*Open read file*/
-    if(!(fdin = open(path, O_APPEND, 0666))){
+    if(-1==(fdin = open(path, O_APPEND, 0666))){
         perror("Body Open");
         exit(EXIT_FAILURE);
     }
 
     /*While 512 bye blocks exist in read file*/
-    while((readSize = read(fdin, readBuf, BLOCK_SIZE)>0)){
+    while(((readSize = read(fdin, readBuf, 512))>0)){
         /*If if on last block, pad with 0's*/
         if(readSize < BLOCK_SIZE){
             for(i=readSize;i<(BLOCK_SIZE);i++){
@@ -231,7 +318,13 @@ void writebody(int fdout, char* path){
             }
         }
         /*Write block*/
-        write(fdout, readBuf, BLOCK_SIZE);
+        if(DEBUG){
+            printf("Writing Block of Size %d to %d\n", readSize,fdout);
+        }
+        if(write(fdout, readBuf, BLOCK_SIZE)==-1){
+            perror("Body Write");
+            exit(EXIT_FAILURE);
+        }
     }
 
     /*Close read file*/

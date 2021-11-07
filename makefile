@@ -17,6 +17,9 @@ arch_helper.o: arch_helper.c
 
 clean: mytar
 	rm archive.o arch_helper.o
+run: mytar
+	rm archive.o arch_helper.o
+	./mytar cf t.tar Fold
 debug: mytar
 	gdb mytar
 valgrind: mytar

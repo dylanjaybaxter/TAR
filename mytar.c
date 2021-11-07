@@ -80,9 +80,7 @@ int main(int argc, char* const argv[]){
 
     /*For the remainder of arguments, Perform action*/
     if(optMask & CREATE){
-        printf("%d\n", argc);
         for(i=3;i < argc; i++){
-            printf("%s\n",argv[i]);
             paths[i-3] = argv[i];
             pathCount++;
         }
@@ -114,6 +112,6 @@ int main(int argc, char* const argv[]){
         printf("You never should have come here\n");
         exit(EXIT_FAILURE);
     }
-
+    perror("Ah: ");
     return 0;
 }

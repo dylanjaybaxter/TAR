@@ -12,7 +12,12 @@ implement of mytar.c
 #include<getopt.h>
 #include<unistd.h>
 #include<sys/stat.h>
+#include <arpa/inet.h>
 
-char *octalConvert(unsigned int n, char *octal);
+char *octalConvert(unsigned int n, char *octal, int len);
 
 int isTAR(char* path);
+
+int insert_special_int(char * where, size_t size, int32_t val);
+
+void fillArray(char* buff, char fill, int len);
