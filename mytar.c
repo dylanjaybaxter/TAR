@@ -27,8 +27,10 @@ implement of mytar.c
 
 
 int main(int argc, char* const argv[]){
-    char* opts = argv[0];
+    char* opts = argv[1];
+    uint16_t optMask = 0;
     char opt;
+    int i;
     for(i=0;i<(int)strlen(opts);i++){
         opt = opts[i];
       /*Flag create, stop if print or extrac*/
@@ -57,7 +59,7 @@ int main(int argc, char* const argv[]){
       }
       /*Reject any other argument*/
       else{
-          printf("Usage: tar [txvfS] [dest] [paths to tar]");
+          printf("Usage: tar [txvfS] [dest] [paths to tar]\n");
           exit(EXIT_FAILURE);
       }
   }
@@ -65,7 +67,7 @@ int main(int argc, char* const argv[]){
     /*Initialize Variables for destination and assign*/
     char* dest;
     if(optMask & FILENAME){
-        dest = argv[1];
+        dest = argv[2];
     }else{
         printf("Absent f not supported");
         exit(EXIT_FAILURE);
@@ -73,19 +75,21 @@ int main(int argc, char* const argv[]){
 
     /*Initialize vars for actions*/
     char* path;
-    char* paths[argc-2];
+    char* paths[argc-3];
     int pathCount =0;
 
     /*For the remainder of arguments, Perform action*/
     if(optMask & CREATE){
-        for(i=2;i < argc; i++){
-            paths[i] = argv[i];
+        printf("%d\n", argc);
+        for(i=3;i < argc; i++){
+            printf("%s\n",argv[i]);
+            paths[i-3] = argv[i];
             pathCount++;
         }
-        createArchive(dest, paths, pathCount);
+        createArchive(dest, paths, pathCount, optMask);
     }
     else if(optMask & PRINT){
-        path = argv[2];
+        path = argv[3];
         /*Print the contents of the tar file*/
         if(isTAR(path)){
             printTAR(1,path);
@@ -96,7 +100,7 @@ int main(int argc, char* const argv[]){
         }
     }
     else if(optMask & EXTRACT){
-        path = argv[2];
+        path = argv[3];
         /*Check if the file is a TAR file*/
         if(isTAR(path)){
             extractArchive(dest, path);

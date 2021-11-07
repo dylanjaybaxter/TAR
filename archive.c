@@ -15,6 +15,8 @@ implement of mytar.c
 #include "archive.h"
 
 #define BLOCK_SIZE 512
+#define MAX_PATH_SIZE 256
+#define DEBUG 1
 
 
 void init_Header(struct Header *head){
@@ -46,7 +48,7 @@ struct Header *create_header(char *fileName, char option){
     struct Header *head = (struct Header *) malloc(sizeof(struct Header));
     char smallOct[8] = {0}; /* Max Octal Size for multiple vars */
     char bigOct[12] = {0}; /* Max OCtal Size for larger vars */
-    init(head);
+    init_Header(head);
     int length = strlen(fileName);
     int i;
     int index;
@@ -89,37 +91,48 @@ struct Header *create_header(char *fileName, char option){
     return head;
 }
 
-void createArchive(char* dest, char** paths, int pathCount, int option){
+void createArchive(char* dest, char** paths, int pathCount, int options){
     /*Define Variables*/
     int i;
     int fd;
 
     /*Open New TAR File in destination*/
+    if(DEBUG){
+        printf("Statting: %s\n", dest);
+    }
     if(!(fd = open(dest, O_CREAT|O_TRUNC, 0666))){
-        perror("Recursive Stat");
+        perror("Open destination");
         exit(EXIT_FAILURE);
     }
 
     /*For each path specified*/
     for(i=0;i<pathCount;i++){
         /*Recursively write each into file*/
-        writeRecur(fd, paths[i]);
+        writeRecur(fd, paths[i], options);
+    }
+
+    if(!(close(fd))){
+        perror("Close Dest");
+        exit(EXIT_FAILURE);
     }
 
 }
 
 
-void writeRecur(int fd, char* path){
+void writeRecur(int fd, char* path, int options){
     /*Open current path*/
     struct stat sb;
     DIR* d;
     struct dirent* e;
-    char* newpath = (char*)malloc(256);
+    char* newpath = (char*)malloc(MAX_PATH_SIZE);
     newpath[0] = '\0';
     int flen = 0;
     int plen = 0;
 
     /*Stat the current target*/
+    if(DEBUG){
+        printf("Recursive Statting: %s\n", path);
+    }
     if(lstat(path, &sb) == -1){
         perror("Recursive Stat");
         exit(EXIT_FAILURE);
@@ -127,8 +140,11 @@ void writeRecur(int fd, char* path){
 
     /*If path is a file, write contents to TAR*/
     if(S_ISREG(sb.st_mode)){
+        if(DEBUG){
+            printf("Writing file: %s\n", path);
+        }
         /*Write Header*/
-        writeheader(fd, path);
+        writeheader(fd, path, options);
 
         /*Write Body*/
         writebody(fd, path);
@@ -138,7 +154,7 @@ void writeRecur(int fd, char* path){
     /*If the items is a symlink*/
     if(S_ISLNK(sb.st_mode)){
         /*Write Header*/
-        writeheader(fd, path);
+        writeheader(fd, path, options);
 
         /*Write Body*/
         writebody(fd, path);
@@ -149,32 +165,40 @@ void writeRecur(int fd, char* path){
     Then enter Recursively*/
     if(S_ISDIR(sb.st_mode)){
         /*Write Header*/
-        writeheader(fd, path);
+        writeheader(fd, path, options);
 
         /*Write Body*/
         writebody(fd, path);
 
         /*Open directory*/
+        if(DEBUG){
+            printf("Opening Dir: %s\n", path);
+        }
         if((d = opendir(path)) == NULL){
-            perror("Recursive Stat");
+            perror("Open Dir");
             exit(EXIT_FAILURE);
         }
 
         /*For every entry in the directory*/
         while((e = readdir(d))){
             /*Check that new length does not exceed max*/
-            flen = strlen(e->d_name);
-            plen = strlen(path);
-            if((flen+plen) >= PATH_MAX){
-                /*Copy the string to the newpath buffer*/
-                strcpy(newpath, path);
+            if(*(e->d_name) != '.'){
+                flen = strlen(e->d_name);
+                plen = strlen(path);
+                if((flen+plen) < MAX_PATH_SIZE){
+                    /*Copy the string to the newpath buffer*/
+                    strcpy(newpath, path);
 
-                /*Add the name to the path*/
-                newpath = strncat(newpath, "/" , 2);
-                newpath = strncat(newpath, e->d_name, flen+1);
+                    /*Add the name to the path*/
+                    newpath = strncat(newpath, "/" , 2);
+                    newpath = strncat(newpath, e->d_name, flen+1);
 
-                /*Explore the entry*/
-                writeRecur(fd, newpath);
+                    /*Explore the entry*/
+                    writeRecur(fd, newpath, options);
+                }
+                else{
+                    printf("Max path size reached\n");
+                }
             }
         }
         /*Close directory*/
@@ -187,7 +211,6 @@ void writeRecur(int fd, char* path){
 
 void writebody(int fdout, char* path){
     /*Define variables*/
-    char writeBuf[BLOCK_SIZE];
     char readBuf[BLOCK_SIZE];
     int fdin;
     int readSize;
@@ -200,7 +223,7 @@ void writebody(int fdout, char* path){
     }
 
     /*While 512 bye blocks exist in read file*/
-    while((readSize = read(fdin, readBuf, BLOCK_SIZE))){
+    while((readSize = read(fdin, readBuf, BLOCK_SIZE)>0)){
         /*If if on last block, pad with 0's*/
         if(readSize < BLOCK_SIZE){
             for(i=readSize;i<(BLOCK_SIZE);i++){
@@ -219,12 +242,12 @@ void writebody(int fdout, char* path){
 
 }
 
-void writeheader(int fdout, char* filename, char option){
+void writeheader(int fdout, char* filename, int option){
     /*Define variables*/
-    int fdin;
     struct Header* head;
-    int lengths[] = [100,8,8,8,12,12,8,1,100,6,2,32,32,8,8,155];
-    int entries = 16;
+    /*
+    int lengths[] = {100,8,8,8,12,12,8,1,100,6,2,32,32,8,8,155};
+    */
 
     /*Create header object*/
     head = create_header(filename, option);
@@ -251,5 +274,23 @@ void writeheader(int fdout, char* filename, char option){
     */
 
     free(head);
+
+}
+
+void extractArchive(char* dest, char* path){
+    /*Initialize Variables*/
+
+    /*Open TAR File*/
+
+    /*Confirm TAR File*/
+
+    /**/
+}
+
+void printTAR(int fd, char* path){
+
+}
+
+void printFile(int fd, char* path){
 
 }
