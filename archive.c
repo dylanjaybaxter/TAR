@@ -12,6 +12,10 @@ implement of mytar.c
 #include <fcntl.h>
 #include <dirent.h>
 #include <limits.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <grp.h>
+#include <pwd.h>
 #include "archive.h"
 
 #define BLOCK_SIZE 512
@@ -54,19 +58,23 @@ struct Header *create_header(char *fileName, char option){
 
     struct stat file;
     lstat(fileName, &file);
+    
+    char *usableUID;
+    struct group *grp;
+    struct passwd *pwd;
+
+    if(insert_special_int(usableUID, 8, file.st_uid)){
+        pwd = getpwuid(file.st_uid);
+        strcpy(head->uname, pwd->pw_name);
+    }
+    grp = getgrgid(file.st_gid);
+    strcpy(head->gname, grp->gr_name);
 
     strcpy(head->mode, octalConvert(file.st_mode, smallOct));
     strcpy(head->uid, octalConvert(file.st_uid, smallOct));
     strcpy(head->gid, octalConvert(file.st_gid, smallOct));
     strcpy(head->size, octalConvert(file.st_size, bigOct));
     strcpy(head->mtime, octalConvert(file.st_mtime, bigOct));
-
-    struct group *grp;
-    struct passwd *pwd;
-    grp = getgrgid(file.st_gid);
-    pwd = getpwuid(file.st_uid);
-    strcpy(head->uname, pwd->pw_name);
-    strcpy(head->gname, grp->gr_name);
 
     if (length <= 256 || option == 'S'){
         for (i = length; i > -1; i--){
