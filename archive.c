@@ -166,6 +166,7 @@ struct Header *create_header(char *fileName, char option){
     int offset = 0;
     for(i=0;i<BLOCK_SIZE;i++){
         memset(head->chksum, ' ', 8);
+        /*If offset has a value and is not in checksum*/
         if(*countPt && (offset < 148) && (offset > 155)){
             checksum = checksum+*countPt;
         }
