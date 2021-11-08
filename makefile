@@ -5,8 +5,9 @@ LDFLAGS = -g
 
 all: mytar archive.o arch_helper.o
 
-mytar: archive.o arch_helper.o mytar.o
-	$(LD) $(LDFLAGS) -o mytar mytar.o archive.o arch_helper.o
+mytar: archive.o arch_helper.o mytar.o extract.o extr_helper.o
+	$(LD) $(LDFLAGS) -o mytar mytar.o archive.o arch_helper.o \
+	extract.o extr_helper.o
 
 mytar.o: archive.c arch_helper.c mytar.c
 	$(CC) $(CFLAGS) -c -o mytar.o mytar.c
@@ -14,11 +15,15 @@ archive.o: archive.c
 	$(CC) $(CFLAGS) -c -o archive.o archive.c
 arch_helper.o: arch_helper.c
 	$(CC) $(CFLAGS) -c -o arch_helper.o arch_helper.c
+extract.o: extract.c extract.h
+	$(CC) $(CFLAGS) -c -o extract.o extract.c
+extr_helper.o: extr_helper.c extr_helper.h
+	$(CC) $(CFLAGS) -c -o extr_helper.o extr_helper.c
 
 clean: mytar
-	rm archive.o arch_helper.o
+	rm archive.o arch_helper.o extract.o extr_helper.o mytar.o
 run: mytar
-	rm archive.o arch_helper.o
+	rm archive.o arch_helper.o extract.o extr_helper.o mytar.o
 	./mytar cf t.tar Fold
 debug: mytar
 	gdb mytar

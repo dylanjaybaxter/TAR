@@ -64,7 +64,7 @@ void fillArray(char* buff, char fill, int len){
 }
 
 int isTAR(char* path){
-    return 0;
+    return 1;
 }
 
 int insert_special_int(char * where, size_t size, int32_t val){

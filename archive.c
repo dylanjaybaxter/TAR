@@ -13,10 +13,6 @@ implement of mytar.c
 #include <limits.h>
 #include "archive.h"
 
-#define BLOCK_SIZE 512
-#define MAX_PATH_SIZE 256
-#define DEBUG 1
-
 
 struct Header* init_Header(){
     struct Header* head =(struct Header*)calloc(1,sizeof(struct Header));
@@ -368,33 +364,13 @@ void writebody(int fdout, char* path){
 void writeheader(int fdout, char* filename, int option){
     /*Define variables*/
     struct Header* head;
-    /*
-    int lengths[] = {100,8,8,8,12,12,8,1,100,6,2,32,32,8,8,155};
-    */
 
     /*Create header object*/
     head = create_header(filename, option);
 
     /*Write header variables in order to file*/
     write(fdout, head, 512);
-    /*
-    write(fdout, head->name, lengths[0]);
-    write(fdout, head->mode, lengths[1]);
-    write(fdout, head->uid, lengths[2]);
-    write(fdout, head->gid, lengths[3]);
-    write(fdout, head->size, lengths[4]);
-    write(fdout, head->mtime, lengths[5]);
-    write(fdout, head->chksum, lengths[6]);
-    write(fdout, head->typeflag, lengths[7]);
-    write(fdout, head->linkname, lengths[8]);
-    write(fdout, head->magic, lengths[9]);
-    write(fdout, head->version, lengths[10]);
-    write(fdout, head->uname, lengths[11]);
-    write(fdout, head->gname, lengths[12]);
-    write(fdout, head->devmajor, lengths[13]);
-    write(fdout, head->devminor, lengths[14]);
-    write(fdout, head->prefix, lengths[15]);
-    */
+
     free(head);
 }
 
