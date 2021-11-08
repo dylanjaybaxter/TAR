@@ -36,6 +36,7 @@ struct __attribute__((__packed__)) Header{
     char devmajor[8];
     char devminor[8];
     char prefix[155];
+    char padding[12];
 };
 
 void init_Header(struct Header *head);

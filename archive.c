@@ -40,6 +40,7 @@ void init_Header(struct Header *head){
     strcpy(head->devmajor, smallOct);
     strcpy(head->devminor, smallOct);
     fillArray(head->prefix, 0, 100);
+    fillArray(head->padding, 0, 12);
 }
 
 struct Header *create_header(char *fileName, char option){
@@ -82,7 +83,8 @@ struct Header *create_header(char *fileName, char option){
                 break;
             }
         }
-        char pre[155] = {0};
+        char pre[155] = {'\0'};
+        memset(pre, '\0', 155);
         if (i == 100){
             for (; i < 256; i++){
                 pre[i-100] = fileTemp[i];
@@ -92,6 +94,11 @@ struct Header *create_header(char *fileName, char option){
             }
         }
         strcpy(head->name, name);
+        i=0;
+        for(i=0;i<155;i++){
+            printf("%c", pre[i]);
+        }
+        printf("\n");
         strcpy(head->prefix, pre);
     }
     else{
@@ -104,7 +111,6 @@ struct Header *create_header(char *fileName, char option){
     strcpy(head->mode, octalConvert((file.st_mode & 0x1FF), smallOct, 8));
 
     /*Convert usable and write uid*/
-    char usableUID[8];
     if(insert_special_int(head->uid, 8, file.st_uid)){
         perror("insert_special_int");
         exit(EXIT_FAILURE);
@@ -141,7 +147,7 @@ struct Header *create_header(char *fileName, char option){
     /*Type Dependant Fields*/
     if(S_ISREG(file.st_mode)){
         head->typeflag = '0';
-        memset(bigOct, 0, 8);
+        memset(bigOct, '\0', 8);
         strcpy(head->size, octalConvert(file.st_size, bigOct, 12));
     }
     else if(S_ISDIR(file.st_mode)){
@@ -166,8 +172,9 @@ struct Header *create_header(char *fileName, char option){
     int offset = 0;
     for(i=0;i<BLOCK_SIZE;i++){
         memset(head->chksum, ' ', 8);
-        /*If offset has a value and is not in checksum*/
-        if(*countPt && ((offset < 148) || (offset > 155))){
+        /*If offset has a value and is not in checksum
+         && ((offset < 148) || (offset > 155))*/
+        if(*countPt){
             checksum = checksum+*countPt;
         }
         offset++;

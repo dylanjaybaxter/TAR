@@ -112,6 +112,5 @@ int main(int argc, char* const argv[]){
         printf("You never should have come here\n");
         exit(EXIT_FAILURE);
     }
-    perror("Ah: ");
     return 0;
 }
