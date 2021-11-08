@@ -129,7 +129,7 @@ void extract_file(char *path, struct Header *head, int fdHead){
         }
     }
     else{
-        if(-1 ==(fd = open(path, O_CREAT|O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO))){
+        if(-1 ==(fd = open(path, O_CREAT|O_TRUNC, 0777))){
             perror(path);
             exit(EXIT_FAILURE);
         }
