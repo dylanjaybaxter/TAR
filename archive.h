@@ -50,6 +50,8 @@ void writeheader(int fd, char* path, int options);
 
 void writebody(int fd, char* path);
 
+void writePad(int fd);
+
 void extractArchive(char* dest, char* path);
 
 void printTAR(int fd, char* path);

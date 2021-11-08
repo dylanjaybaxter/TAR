@@ -101,16 +101,16 @@ struct Header *create_header(char *fileName, char option){
 
     /*Write mode*/
     memset(smallOct, '0', 8);
-    strcpy(head->mode, octalConvert(file.st_mode, smallOct, 8));
+    strcpy(head->mode, octalConvert((file.st_mode & 0x1FF), smallOct, 8));
 
     /*Convert usable and write uid*/
     char usableUID[8];
-    if(insert_special_int(usableUID, 8, file.st_uid)){
+    if(insert_special_int(head->uid, 8, file.st_uid)){
         perror("insert_special_int");
         exit(EXIT_FAILURE);
     }
     memset(smallOct, '0', 8);
-    strcpy(head->uid, usableUID);
+    /*strcpy(, usableUID);*/
 
     /*Write gid*/
     memset(smallOct, '0', 8);
@@ -194,6 +194,8 @@ void createArchive(char* dest, char** paths, int pathCount, int options){
         /*Recursively write each into file*/
         writeRecur(fd, paths[i], options);
     }
+
+    writePad(fd);
 
     if(close(fd)){
         perror("Close Dest");
@@ -384,10 +386,23 @@ void writeheader(int fdout, char* filename, int option){
     write(fdout, head->devminor, lengths[14]);
     write(fdout, head->prefix, lengths[15]);
     */
-
     free(head);
-
 }
+
+
+void writePad(int fd){
+    /*Define variables*/
+    char readBuf[BLOCK_SIZE] = {'\0'};
+    /*Write block*/
+    if(DEBUG){
+        printf("Writing Padding Block to %d\n", fd);
+    }
+    if(write(fd, readBuf, BLOCK_SIZE)==-1){
+        perror("Pad Write");
+        exit(EXIT_FAILURE);
+        }
+    }
+
 
 void extractArchive(char* dest, char* path){
     /*Initialize Variables*/
