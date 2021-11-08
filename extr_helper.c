@@ -22,12 +22,16 @@ double pow2(double base, double power){
 }
 
 int checkpre(char* pre, char* str){
+    /*Strip file contents*/
     int i;
     int prelen = strlen(pre);
     for(i=0;i<prelen;i++){
         if(pre[i] != str [i]){
             return 0;
         }
+    }
+    if(pre[prelen-1] != '/'){
+        return 0;
     }
     return 1;
 }
@@ -46,4 +50,28 @@ int unoctal(char *octal){
         }
     }
     return sum;
+}
+
+void ensureDir(char* path){
+    int len = strlen(path);
+    char dirPath[256] = {'\0'};
+    int i;
+    int ind;
+    for(i = len-1; i>-1; i--){
+        if(path[i] == '/'){
+            ind = i;
+            break;
+        }
+    }
+    for(i=0;i<=ind;i++){
+        dirPath[i] = path[i];
+        if((path[i] == '/') && (i!=0)){
+            if (mkdir(dirPath, 0666) == -1){
+                if(errno != EEXIST){
+                    perror("mkdir");
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
+    }
 }

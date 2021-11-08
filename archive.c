@@ -247,9 +247,6 @@ void writeRecur(int fd, char* path, int options){
         /*Write Header*/
         writeheader(fd, path, options);
 
-        /*Write Body*/
-        writebody(fd, path);
-
     }
 
     /*If path is a directory, write contents to file

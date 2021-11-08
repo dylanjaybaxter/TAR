@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include "archive.h"
-#include "extr_helper.h"
-#include "arch_helper.h"
 
 int giveExecute(mode_t e_mode);
 

@@ -12,7 +12,6 @@ implement of mytar.c
 #include <unistd.h>
 #include <dirent.h>
 #include <limits.h>
-#include "archive.h"
 #include "arch_helper.h"
 
 /*Converts and integer into and ascii string in octal*/

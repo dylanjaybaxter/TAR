@@ -10,8 +10,9 @@ Description: This file contains functions necessary for extraction
 #include <unistd.h>
 #include <dirent.h>
 #include <limits.h>
+#include <errno.h>
 #include "extract.h"
-
+#include "extr_helper.h"
 
 int giveExecute(mode_t e_mode){
     /* Takes a given filename and gives execute to everyone
@@ -43,6 +44,9 @@ int checksum(struct Header *head){
          countPt++;
      }
      strcpy(head->chksum, octalConvert(realsum, smallOct, 8));
+     if(DEBUG){
+         printf("Checksum %s: %d %d\n", head->name, checksum, realsum);
+     }
      if(checksum == 256){
          return 0;
      }
@@ -62,27 +66,86 @@ void extract_file(char *path, struct Header *head, int fdHead){
     mode_t e_mode = unoctal(head->mode);
     off_t e_size = unoctal(head->size);
     time_t e_mtime = unoctal(head->mtime);
+    time_t atime;
+    int i = e_size;
+    int fd;
     /*struct utimbuf oldtime;
     oldtime.modtime = e_mtime;
     utime(path, oldtime);*/
     char buffer[512] = {0};
-    if (giveExecute(e_mode) == 0){
-        int i = e_size;
-        int fd = open(path, O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
-        while (i >= 512){
-            read(fdHead, buffer, 512);
-            write(fd, buffer, 512);
-            i -= 512;
+    ensureDir(path);
+    if(e_size > 0){
+        if (giveExecute(e_mode) == 0){
+            if(-1 ==(fd = open(path, O_CREAT|O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO))){
+                perror(path);
+                exit(EXIT_FAILURE);
+            }
+
+            while (i >= 512){
+                if(-1 == read(fdHead, buffer, 512)){
+                    perror("Read Body TAR");
+                    exit(EXIT_FAILURE);
+                }
+                if(DEBUG){
+                    printf("Writing Chunk of size %d", 512);
+                }
+                if(-1 == write(fd, buffer, 512)){
+                    perror("Write Body");
+                    exit(EXIT_FAILURE);
+                }
+                i -= 512;
+            }
+            if(-1==read(fdHead, buffer, 512)){
+                perror("Read Final Block");
+                exit(EXIT_FAILURE);
+            }
+            if(DEBUG){
+                printf("Writing Chunk of size %d", i);
+            }
+            if(-1==write(fd, buffer, i)){
+                perror("Write Final Block");
+                exit(EXIT_FAILURE);
+            }
         }
-        read(fdHead, buffer, 512);
-        write(fd, buffer, i);
+        else{
+            int fd = open(path, O_WRONLY | O_CREAT |O_TRUNC, 0666);
+            char buffer[512] = {0};
+            if(-1 == read(fdHead, buffer, 512)){
+                perror("Write Single Body Block");
+                exit(EXIT_FAILURE);
+            }
+            if(-1 == write(fd, buffer, e_size)){
+                perror("Write Single Body Block");
+                exit(EXIT_FAILURE);
+            }
+        }
     }
     else{
-        int fd = open(path, O_WRONLY | O_CREAT, 0666);
-        char buffer[512] = {0};
-        read(fdHead, buffer, 512);
-        write(fd, buffer, 512);
+        if(-1 ==(fd = open(path, O_CREAT|O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO))){
+            perror(path);
+            exit(EXIT_FAILURE);
+        }
     }
+    if(close(fd) == -1){
+        perror("Close Body Write");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void extract_link(char *path, struct Header *head){
+    /* Takes a path name of a file and the header for said file and
+     * extracts its contents from the archive into a new file with the
+     * given path
+     */
+     if (symlink(head->linkname, path) == -1){
+         if(errno = EEXIST){
+             return;
+         }
+         else{
+             perror("symlink");
+             exit(EXIT_FAILURE);
+         }
+     }
 }
 
 void extract_directory(char *path, struct Header *head){
@@ -90,9 +153,15 @@ void extract_directory(char *path, struct Header *head){
      * the given archive *
      */
     mode_t e_mode = unoctal(head->mode);
+    ensureDir(path);
     if (mkdir(path, e_mode) == -1){
-        perror("mkdir");
-        exit(EXIT_FAILURE);
+        if(errno = EEXIST){
+            return;
+        }
+        else{
+            perror("mkdir");
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
@@ -100,15 +169,24 @@ void extract(char *fileName, char *archive){
     /* Searches through the archive for the given file name.
      * If it exists it attempts to extract the file.
      */
-    int fd = open(archive, O_RDONLY, 0666);
+     if(DEBUG){
+         printf("Calling extract\n");
+     }
+    int fd;
+    if (-1==(fd = open(archive, O_RDONLY, 0666))){
+        perror(archive);
+        exit(EXIT_FAILURE);
+    }
     char buffer[512];
-    read(fd, buffer, 512);
     struct Header *head;
     int numblocks = 0;
     int readsize = 0;
     int checkVal = 0;
     int endblock = 0;
     while((readsize = read(fd, buffer, 512)) > 0){
+        if(DEBUG){
+            printf("Reading block of size %d\n", readsize);
+        }
         if (numblocks == 0){
             head = (struct Header *)(buffer);
             /*Check for null blocks and invalid headers*/
@@ -119,7 +197,13 @@ void extract(char *fileName, char *archive){
             }
             if(checkVal == 0){
                 endblock++;
+                if(DEBUG){
+                    printf(" End Block %d Encountered \n", endblock);
+                }
                 if(endblock < 1){
+                    if(DEBUG){
+                        printf("EOF \n");
+                    }
                     return;
                 }
             }
@@ -135,15 +219,31 @@ void extract(char *fileName, char *archive){
             char fname[256] = {0};
             strcpy(fname, head->prefix);
             strcat(fname, head->name);
-            if (fname == fileName || strstr(fname, fileName)){
+            printf("checking %s and %s\n",fname, fileName);
+            if (!(strcmp(fname, fileName)) || checkpre(fileName, fname)){
             /*Check if the fileNames match */
                 if (head->typeflag == '5'){
-                /* Checks if the file is a directory */
-                    extract_directory(fname, head);
+                    /* Checks if the file is a directory */
+                    if(DEBUG){
+                        printf("Extracting directory: %s\n", fname);
+                    }
+                        extract_directory(fname, head);
                 }
                 else if (head->typeflag == '0'){
-                /* Checks if the file is a REG file*/
-                    extract_file(fname, head, fd);
+                    /* Checks if the file is a REG file*/
+                    if(DEBUG){
+                        printf("Extracting File: %s\n", fname);
+                    }
+                        extract_file(fname, head, fd);
+                        numblocks = 0;
+                }
+                else if (head->typeflag == '2'){
+                    /* Checks if the file is a SYMLNK file*/
+                    if(DEBUG){
+                        printf("Extracting SYMLNK: %s\n", fname);
+                    }
+                        extract_link(fname, head);
+                        numblocks = 0;
                 }
             }
         }

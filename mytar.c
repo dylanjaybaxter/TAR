@@ -16,8 +16,6 @@ implement of mytar.c
 #include<pwd.h>
 #include<sys/stat.h>
 #include<stdlib.h>
-#include"archive.h"
-#include"arch_helper.h"
 #include"extract.h"
 #define CREATE 0x01
 #define PRINT 0x02
@@ -102,7 +100,7 @@ int main(int argc, char* const argv[]){
         path = argv[3];
         /*Check if the file is a TAR file*/
         if(isTAR(path)){
-            extract(dest, path);
+            extract(path, dest);
         }
         else{
             printf("This is not a TAR file");
