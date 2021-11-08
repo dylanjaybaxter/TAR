@@ -18,9 +18,8 @@ implement of mytar.c
 #define DEBUG 1
 
 
-struct Header init_Header(){
-    struct Header header;
-    struct Header* head = &header;
+struct Header* init_Header(){
+    struct Header* head =(struct Header*)calloc(1,sizeof(struct Header));
     /* Initializes the header */
     char smallOct[8] = {'\0'};
     char bigOct[12] = {'\0'};
@@ -42,14 +41,13 @@ struct Header init_Header(){
     strcpy(head->devminor, smallOct);
     fillArray(head->prefix, 0, 100);
     fillArray(head->padding, 0, 12);
-    return header;
+    return head;
 }
 
-struct Header create_header(char *fileName, char option){
+struct Header* create_header(char *fileName, char option){
     /* Takes the given file name and creates a header. It also takes in an
      * option variable to check if the Strict mode has been set */
-    struct Header header = init_Header();
-    struct Header* head = &header;
+    struct Header* head = init_Header();
     char smallOct[8] = {0}; /* Max Octal Size for 8 byte vars */
     char bigOct[12] = {0}; /* Max Octal Size for 12 byte vars */
     int length = strlen(fileName);
@@ -185,7 +183,7 @@ struct Header create_header(char *fileName, char option){
     }
     strcpy(head->chksum, octalConvert(checksum, smallOct, 8));
 
-    return header;
+    return head;
 }
 
 void createArchive(char* dest, char** paths, int pathCount, int options){
@@ -371,7 +369,7 @@ void writebody(int fdout, char* path){
 
 void writeheader(int fdout, char* filename, int option){
     /*Define variables*/
-    struct Header head;
+    struct Header* head;
     /*
     int lengths[] = {100,8,8,8,12,12,8,1,100,6,2,32,32,8,8,155};
     */
@@ -380,7 +378,7 @@ void writeheader(int fdout, char* filename, int option){
     head = create_header(filename, option);
 
     /*Write header variables in order to file*/
-    write(fdout, &head, 512);
+    write(fdout, head, 512);
     /*
     write(fdout, head->name, lengths[0]);
     write(fdout, head->mode, lengths[1]);
@@ -399,6 +397,7 @@ void writeheader(int fdout, char* filename, int option){
     write(fdout, head->devminor, lengths[14]);
     write(fdout, head->prefix, lengths[15]);
     */
+    free(head);
 }
 
 

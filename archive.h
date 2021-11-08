@@ -39,9 +39,9 @@ struct __attribute__((__packed__)) Header{
     char padding[12];
 };
 
-void init_Header(struct Header *head);
+struct Header* init_Header();
 
-struct Header *create_header(char *fileName, char option);
+struct Header* create_header(char *fileName, char option);
 
 void createArchive(char* dest, char** paths, int pathCount, int options);
 

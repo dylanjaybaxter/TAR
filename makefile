@@ -23,4 +23,4 @@ run: mytar
 debug: mytar
 	gdb mytar
 valgrind: mytar
-	valgrind -s --leak-check=full --show-leak-kinds=all ./mytar cf t.tar Fold
+	valgrind -s --leak-check=full --track-origins=yes --show-leak-kinds=all ./mytar cf t.tar Fold
