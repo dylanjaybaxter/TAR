@@ -403,8 +403,12 @@ void writePad(int fd){
     if(write(fd, readBuf, BLOCK_SIZE)==-1){
         perror("Pad Write");
         exit(EXIT_FAILURE);
-        }
     }
+    if(write(fd, readBuf, BLOCK_SIZE)==-1){
+        perror("Pad Write");
+        exit(EXIT_FAILURE);
+    }
+}
 
 
 void extractArchive(char* dest, char* path){
