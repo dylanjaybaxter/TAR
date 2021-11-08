@@ -163,11 +163,13 @@ struct Header *create_header(char *fileName, char option){
 
     /*Count Characters in header and write to checksum*/
     unsigned char* countPt = (unsigned char*)head;
+    int offset = 0;
     for(i=0;i<BLOCK_SIZE;i++){
         memset(head->chksum, ' ', 8);
-        if(*countPt){
+        if(*countPt && (offset < 148) && (offset > 155)){
             checksum = checksum+*countPt;
         }
+        offset++;
         countPt++;
     }
     strcpy(head->chksum, octalConvert(checksum, smallOct, 8));
