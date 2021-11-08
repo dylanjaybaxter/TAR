@@ -9,7 +9,6 @@ implement of mytar.c
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <dirent.h>
 #include <limits.h>
 #include "archive.h"
@@ -19,7 +18,9 @@ implement of mytar.c
 #define DEBUG 1
 
 
-void init_Header(struct Header *head){
+struct Header init_Header(){
+    struct Header header;
+    struct Header* head = &header;
     /* Initializes the header */
     char smallOct[8] = {'\0'};
     char bigOct[12] = {'\0'};
@@ -41,15 +42,16 @@ void init_Header(struct Header *head){
     strcpy(head->devminor, smallOct);
     fillArray(head->prefix, 0, 100);
     fillArray(head->padding, 0, 12);
+    return header;
 }
 
-struct Header *create_header(char *fileName, char option){
+struct Header create_header(char *fileName, char option){
     /* Takes the given file name and creates a header. It also takes in an
      * option variable to check if the Strict mode has been set */
-    struct Header *head = (struct Header *) malloc(sizeof(struct Header));
+    struct Header header = init_Header();
+    struct Header* head = &header;
     char smallOct[8] = {0}; /* Max Octal Size for 8 byte vars */
     char bigOct[12] = {0}; /* Max Octal Size for 12 byte vars */
-    init_Header(head);
     int length = strlen(fileName);
     int i;
     int checksum = 0;
@@ -60,6 +62,7 @@ struct Header *create_header(char *fileName, char option){
 
     /*Write Name and Prefix*/
     char name[100];
+    char pre[155] = {'\0'};
     char fileTemp[256];
     strcpy(fileTemp,fileName);
     /*Append slash to directories*/
@@ -83,7 +86,7 @@ struct Header *create_header(char *fileName, char option){
                 break;
             }
         }
-        char pre[155] = {'\0'};
+
         memset(pre, '\0', 155);
         if (i == 100){
             for (; i < 256; i++){
@@ -170,19 +173,19 @@ struct Header *create_header(char *fileName, char option){
     /*Count Characters in header and write to checksum*/
     unsigned char* countPt = (unsigned char*)head;
     int offset = 0;
+    memset(head->chksum, ' ', 8);
+    checksum = 0;
+    memset(smallOct, '0', 8);
     for(i=0;i<BLOCK_SIZE;i++){
-        memset(head->chksum, ' ', 8);
         /*If offset has a value and is not in checksum
          && ((offset < 148) || (offset > 155))*/
-        if(*countPt){
-            checksum = checksum+*countPt;
-        }
+        checksum = checksum+*countPt;
         offset++;
         countPt++;
     }
     strcpy(head->chksum, octalConvert(checksum, smallOct, 8));
 
-    return head;
+    return header;
 }
 
 void createArchive(char* dest, char** paths, int pathCount, int options){
@@ -220,7 +223,7 @@ void writeRecur(int fd, char* path, int options){
     struct stat sb;
     DIR* d;
     struct dirent* e;
-    char* newpath = (char*)malloc(MAX_PATH_SIZE);
+    char newpath[MAX_PATH_SIZE];
     newpath[0] = '\0';
     int flen = 0;
     int plen = 0;
@@ -286,8 +289,8 @@ void writeRecur(int fd, char* path, int options){
                     strcpy(newpath, path);
 
                     /*Add the name to the path*/
-                    newpath = strncat(newpath, "/" , 2);
-                    newpath = strncat(newpath, e->d_name, flen+1);
+                    strncat(newpath, "/" , 2);
+                    strncat(newpath, e->d_name, flen+1);
 
                     /*Explore the entry*/
                     writeRecur(fd, newpath, options);
@@ -308,8 +311,8 @@ void writeRecur(int fd, char* path, int options){
                     strcpy(newpath, path);
 
                     /*Add the name to the path*/
-                    newpath = strncat(newpath, "/" , 2);
-                    newpath = strncat(newpath, e->d_name, flen+1);
+                    strncat(newpath, "/" , 2);
+                    strncat(newpath, e->d_name, flen+1);
 
                     /*Explore the entry*/
                     writeRecur(fd, newpath, options);
@@ -368,7 +371,7 @@ void writebody(int fdout, char* path){
 
 void writeheader(int fdout, char* filename, int option){
     /*Define variables*/
-    struct Header* head;
+    struct Header head;
     /*
     int lengths[] = {100,8,8,8,12,12,8,1,100,6,2,32,32,8,8,155};
     */
@@ -377,7 +380,7 @@ void writeheader(int fdout, char* filename, int option){
     head = create_header(filename, option);
 
     /*Write header variables in order to file*/
-    write(fdout, head, 512);
+    write(fdout, &head, 512);
     /*
     write(fdout, head->name, lengths[0]);
     write(fdout, head->mode, lengths[1]);
@@ -396,7 +399,6 @@ void writeheader(int fdout, char* filename, int option){
     write(fdout, head->devminor, lengths[14]);
     write(fdout, head->prefix, lengths[15]);
     */
-    free(head);
 }
 
 

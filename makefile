@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -g 
+CFLAGS = -Wall -g
 LD = gcc
 LDFLAGS = -g
 
@@ -23,4 +23,4 @@ run: mytar
 debug: mytar
 	gdb mytar
 valgrind: mytar
-	valgrind -s --leak-check=full --show-leak-kinds=all ./mytar st.txt
+	valgrind -s --leak-check=full --show-leak-kinds=all ./mytar cf t.tar Fold

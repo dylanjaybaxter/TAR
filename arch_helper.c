@@ -6,12 +6,19 @@ Description: This file contains main functionality for home
 implement of mytar.c
 */
 #include<string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <limits.h>
+#include "archive.h"
 #include "arch_helper.h"
 
-
+/*Converts and integer into and ascii string in octal*/
 char *octalConvert(unsigned int n, char *octal, int len){
     /* Takes a char pointer of a given size and creates an octal number
-     * from the given integer.  */
+     * from the given integer.*/
      /*Fill with zeros*/
      int i=0;
      for(i=0;i<len;i++){
@@ -20,7 +27,7 @@ char *octalConvert(unsigned int n, char *octal, int len){
      /*Special Case - n=0*/
     if(n == 0){
         /*Null terminate if room*/
-        if(strlen(octal) > 1){
+        if(len > 1){
             octal[len-1] = '\0';
         }
         return octal;
@@ -37,14 +44,16 @@ char *octalConvert(unsigned int n, char *octal, int len){
 
     /*Reverse back string*/
     int j;
-    char temp[strlen(octal)];
-    strcpy(temp, octal);
-    for (j = len - 2, i = 0; i < len-1; i++, j--){
+    char* temp = (char*)malloc(sizeof(char)*len);
+    fillArray(temp, '\0', len);
+    strncpy(temp, octal, len);
+    for (j = len - 2, i = 0; i < len-2; i++, j--){
         octal[i] = temp[j];
     }
 
     /*Null Terminate if room*/
     octal[len-1] = '\0';
+    free(temp);
     return octal;
 }
 
