@@ -121,7 +121,11 @@ struct Header* create_header(char *fileName, char option){
 
     /*Write gid*/
     memset(smallOct, '0', 8);
-    strcpy(head->gid, octalConvert(file.st_gid, smallOct, 8));
+    if(insert_special_int(head->gid, 8, file.st_gid)){
+        perror("insert_special_int");
+        exit(EXIT_FAILURE);
+    }
+    /*strcpy(head->gid, octalConvert(file.st_gid, smallOct, 8));*/
 
     /*See Size at dependent*/
 
@@ -170,7 +174,6 @@ struct Header* create_header(char *fileName, char option){
 
     /*Count Characters in header and write to checksum*/
     unsigned char* countPt = (unsigned char*)head;
-    int offset = 0;
     memset(head->chksum, ' ', 8);
     checksum = 0;
     memset(smallOct, '0', 8);
@@ -178,7 +181,6 @@ struct Header* create_header(char *fileName, char option){
         /*If offset has a value and is not in checksum
          && ((offset < 148) || (offset > 155))*/
         checksum = checksum+*countPt;
-        offset++;
         countPt++;
     }
     strcpy(head->chksum, octalConvert(checksum, smallOct, 8));
