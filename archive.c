@@ -121,11 +121,7 @@ struct Header* create_header(char *fileName, char option){
 
     /*Write gid*/
     memset(smallOct, '0', 8);
-    if(insert_special_int(head->gid, 8, file.st_gid)){
-        perror("insert_special_int");
-        exit(EXIT_FAILURE);
-    }
-    /*strcpy(head->gid, octalConvert(file.st_gid, smallOct, 8));*/
+    strcpy(head->gid, octalConvert(file.st_gid, smallOct, 8));
 
     /*See Size at dependent*/
 

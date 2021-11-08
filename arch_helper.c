@@ -45,9 +45,8 @@ char *octalConvert(unsigned int n, char *octal, int len){
     /*Reverse back string*/
     int j;
     char* temp = (char*)malloc(sizeof(char)*len);
-    fillArray(temp, '\0', len);
     strncpy(temp, octal, len);
-    for (j = len - 2, i = 0; i < len-2; i++, j--){
+    for (j = len - 2, i = 0; i < len-1; i++, j--){
         octal[i] = temp[j];
     }
 
