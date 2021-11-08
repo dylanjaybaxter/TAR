@@ -97,7 +97,9 @@ int main(int argc, char* const argv[]){
         }
     }
     else if(optMask & EXTRACT){
-        path = argv[3];
+        if(argc > 2){
+            path = argv[3];
+        }
         /*Check if the file is a TAR file*/
         if(isTAR(path)){
             extract(path, dest);

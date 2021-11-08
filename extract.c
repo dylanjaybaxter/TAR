@@ -11,6 +11,9 @@ Description: This file contains functions necessary for extraction
 #include <dirent.h>
 #include <limits.h>
 #include <errno.h>
+#include <utime.h>
+#include <time.h>
+#include <sys/time.h>
 #include "extract.h"
 #include "extr_helper.h"
 
@@ -18,9 +21,9 @@ int giveExecute(mode_t e_mode){
     /* Takes a given filename and gives execute to everyone
      * if at least on person has execute permissions
      * returns 0 on success and -1 on failure */
-    if(e_mode & S_IXUSR ||
-        e_mode & S_IXGRP ||
-        e_mode & S_IXOTH){
+    if((e_mode & S_IXUSR) ||
+        (e_mode & S_IXGRP) ||
+        (e_mode & S_IXOTH)){
 
         return 0;
     }
@@ -66,7 +69,8 @@ void extract_file(char *path, struct Header *head, int fdHead){
     mode_t e_mode = unoctal(head->mode);
     off_t e_size = unoctal(head->size);
     time_t e_mtime = unoctal(head->mtime);
-    time_t atime;
+    time_t atime = time(NULL);
+    struct utimbuf timebuf;
     int i = e_size;
     int fd;
     /*struct utimbuf oldtime;
@@ -76,9 +80,12 @@ void extract_file(char *path, struct Header *head, int fdHead){
     ensureDir(path);
     if(e_size > 0){
         if (giveExecute(e_mode) == 0){
-            if(-1 ==(fd = open(path, O_CREAT|O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO))){
+            if(-1 ==(fd = open(path, O_CREAT|O_TRUNC|O_WRONLY,0777))){
                 perror(path);
                 exit(EXIT_FAILURE);
+            }
+            if(DEBUG){
+                printf("File Descriptor is %d\n", fd);
             }
 
             while (i >= 512){
@@ -100,7 +107,8 @@ void extract_file(char *path, struct Header *head, int fdHead){
                 exit(EXIT_FAILURE);
             }
             if(DEBUG){
-                printf("Writing Chunk of size %d", i);
+                printf("Writing Chunk of size %d\n", i);
+                printf("Writing: %d %s %d\n", fd, buffer, i);
             }
             if(-1==write(fd, buffer, i)){
                 perror("Write Final Block");
@@ -126,10 +134,27 @@ void extract_file(char *path, struct Header *head, int fdHead){
             exit(EXIT_FAILURE);
         }
     }
+
     if(close(fd) == -1){
         perror("Close Body Write");
         exit(EXIT_FAILURE);
     }
+
+    /*Time Stuff*/
+    struct stat sb;
+    if(stat(path, &sb) == -1){
+        perror("Time Stat");
+        exit(EXIT_FAILURE);
+    }
+    atime = sb.st_atime;
+    timebuf.actime = atime;
+    timebuf.modtime = e_mtime;
+    if(-1 == utime(path, &timebuf)){
+        perror("Time Stuff");
+        exit(EXIT_FAILURE);
+    }
+
+
 }
 
 void extract_link(char *path, struct Header *head){
@@ -219,7 +244,9 @@ void extract(char *fileName, char *archive){
             char fname[256] = {0};
             strcpy(fname, head->prefix);
             strcat(fname, head->name);
-            printf("checking %s and %s\n",fname, fileName);
+            if(DEBUG){
+                printf("checking %s and %s\n",fname, fileName);
+            }
             if (!(strcmp(fname, fileName)) || checkpre(fileName, fname)){
             /*Check if the fileNames match */
                 if (head->typeflag == '5'){

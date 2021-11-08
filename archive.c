@@ -58,7 +58,13 @@ struct Header* create_header(char *fileName, char option){
     char name[100];
     char pre[155] = {'\0'};
     char fileTemp[256];
-    strcpy(fileTemp,fileName);
+    if(length < 256){
+        strcpy(fileTemp,fileName);
+    }else{
+       perror("File name is too long");
+       exit(EXIT_FAILURE);
+    }
+
     /*Append slash to directories*/
     if(S_ISDIR(file.st_mode)){
         length = length+1;
@@ -74,28 +80,28 @@ struct Header* create_header(char *fileName, char option){
 
     /*Read filname into buffers*/
     if (length <= 256 || option == 'S'){
-        for (i = 0; i < 100; i++){
-            name[i] = fileTemp[i];
-            if(fileTemp[i] == '\0'){
-                break;
-            }
-        }
-
-        memset(pre, '\0', 155);
-        if (i == 100){
-            for (; i < 256; i++){
-                pre[i-100] = fileTemp[i];
+        if(length > 100){
+            for (i = 0; i < 155; i++){
+                pre[i] = fileTemp[i];
                 if(fileTemp[i] == '\0'){
                     break;
                 }
             }
+
+            memset(pre, '\0', 155);
+            if (i == 155){
+                for (; i < 256; i++){
+                    name[i-155] = fileTemp[i];
+                    if(fileTemp[i] == '\0'){
+                        break;
+                    }
+                }
+            }
+        }
+        else{
+            strcpy(name, fileTemp);
         }
         strcpy(head->name, name);
-        i=0;
-        for(i=0;i<155;i++){
-            printf("%c", pre[i]);
-        }
-        printf("\n");
         strcpy(head->prefix, pre);
     }
     else{

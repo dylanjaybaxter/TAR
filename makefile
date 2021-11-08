@@ -25,7 +25,11 @@ clean: mytar
 run: mytar
 	rm archive.o arch_helper.o extract.o extr_helper.o mytar.o
 	./mytar cf t.tar Fold
+	./mytar xf t.tar Fold/
 debug: mytar
 	gdb mytar
 valgrind: mytar
-	valgrind -s --leak-check=full --track-origins=yes --show-leak-kinds=all ./mytar cf t.tar Fold
+	valgrind -s --leak-check=full --track-origins=yes --show-leak-kinds=all \
+	./mytar cf t.tar Fold
+	valgrind -s --leak-check=full --track-origins=yes --show-leak-kinds=all \
+	./mytar xf t.tar Fold/
