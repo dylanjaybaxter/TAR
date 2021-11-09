@@ -75,7 +75,7 @@ int isTAR(char* path){
     int readsize = 0;
     int checkVal = 0;
 
-    if((fd = open(path, O_CREAT|O_TRUNC|O_WRONLY, 0666)) == -1){
+    if((fd = open(path, O_RDONLY, 0666)) == -1){
         perror("Open destination");
         exit(EXIT_FAILURE);
     }
