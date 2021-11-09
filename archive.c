@@ -59,6 +59,7 @@ struct Header* create_header(char *fileName, char option){
     char name[100] = {'\0'};
     char pre[155] = {'\0'};
     char fileTemp[256] = {'\0'};
+
     /*Copy Filename into temp list*/
     if(length < 256){
         strncpy(fileTemp,fileName,length);

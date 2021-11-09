@@ -189,37 +189,43 @@ void extract_directory(char *path, struct Header *head){
     }
 }
 
-void extract(char *fileName, char *archive, unsigned int optMask){
+void extract(char **fileNames, int pathcount,
+    char *archive, unsigned int optMask){
     /* Searches through the archive for the given file name.
      * If it exists it attempts to extract the file.
      */
-     if(DEBUG){
-         printf("Calling extract\n");
-     }
-    int fd;
+     /*Define Variables*/
+     char buffer[512];
+     struct Header *head;
+     int numblocks = 0;
+     int readsize = 0;
+     int checkVal = 0;
+     int endblock = 0;
+     int i = 0;
+     int fd;
+     /*Open the archive*/
     if (-1==(fd = open(archive, O_RDONLY, 0666))){
         perror(archive);
         exit(EXIT_FAILURE);
     }
-    char buffer[512];
-    struct Header *head;
-    int numblocks = 0;
-    int readsize = 0;
-    int checkVal = 0;
-    int endblock = 0;
-    int i = 0;
+
+    /*For each header in the file*/
     while((readsize = read(fd, buffer, 512)) > 0){
         if(DEBUG){
             printf("Reading block of size %d\n", readsize);
         }
+        /*If not a body block*/
         if (numblocks == 0){
+            /*Extract the header*/
             head = (struct Header *)(buffer);
+
             /*Check for null blocks and invalid headers*/
             checkVal = checksum(head);
             if(checkVal == -1){
                 perror("INVALID HEADER\n");
                 exit(EXIT_FAILURE);
             }
+            /*Exit On encountering 2 empty blocks*/
             if(checkVal == 0){
                 endblock++;
                 if(DEBUG){
@@ -232,7 +238,10 @@ void extract(char *fileName, char *archive, unsigned int optMask){
                     return;
                 }
             }
+
+            /*Get Size of body and calculate number of body blocks to skip*/
             int size = unoctal(head->size);
+
             /* If there is a remainder we need and entire 512 byte block
             */
             if ((size % 512) == 0){
@@ -241,6 +250,7 @@ void extract(char *fileName, char *archive, unsigned int optMask){
             else{
                    numblocks = (size / 512) + 1;
             }
+
             /*Parse Path name*/
             char fname[257] = {0};
             char delim[2] = "/\0";
@@ -258,15 +268,21 @@ void extract(char *fileName, char *archive, unsigned int optMask){
             strncat(fname, head->name, 100);
 
             /*Find type*/
-            if(DEBUG){
-                printf("checking %s and %s\n",fname, fileName);
+            int extractFlag = 0;
+            for(i=0;i<pathcount;i++){
+                if (!(strcmp(fname, fileNames[i]))
+                    || checkpre(fileNames[i], fname)
+                    || (optMask & ALLFLAG)){
+                        extractFlag = 1;
+                    }
             }
-            if (!(strcmp(fname, fileName)) || checkpre(fileName, fname)
-                || (optMask & ALLFLAG)){
+
+            /*Check if the fileNames match */
+            if (extractFlag){
                 if(optMask & VERBOSE){
                     printf("%s\n", fname);
                 }
-                /*Check if the fileNames match */
+
                 if (head->typeflag == '5'){
                     /* Checks if the file is a directory */
                     if(DEBUG){

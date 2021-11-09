@@ -13,6 +13,7 @@ void extract_directory(char *path, struct Header *head);
 
 int checksum(struct Header *head);
 
-void extract(char *fileName, char *archive, unsigned int options);
+void extract(char **fileName, int pathcount,
+    char *archive, unsigned int options);
 
 

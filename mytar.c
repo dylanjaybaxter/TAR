@@ -117,19 +117,20 @@ int main(int argc, char* const argv[]){
     else if(optMask & EXTRACT){
         if(argc > 3){
             for(i=3;i < argc; i++){
-                path = argv[i];
-                /*Check if the file is a TAR file*/
-                if(1){
-                    extract(argv[i], dest, optMask);
-                }
-                else{
-                    perror("This is not a TAR file");
-                    exit(EXIT_FAILURE);
-                }
+                paths[i-3] = argv[i];
+                pathCount++;
+            }
+            /*Check if the file is a TAR file*/
+            if(1){
+                extract(paths, pathCount, dest, optMask);
+            }
+            else{
+                perror("This is not a TAR file");
+                exit(EXIT_FAILURE);
             }
         }
         else if(argc == 3){
-            extract(dest, dest, optMask | ALLFLAG);
+            extract(paths, pathCount, dest, optMask | ALLFLAG);
         }
         else{
             perror(" Extract Usage: tar [txvfS] [dest] [paths to tar]\n");
