@@ -68,10 +68,10 @@ struct Header* create_header(char *fileName, char option){
 
     /*Append slash to directories*/
     if(S_ISDIR(file.st_mode)){
-        length = length+1;
         if(length<255){
             fileTemp[length] = '/';
         }
+        length++;
         else{
            perror("File name is too long");
            exit(EXIT_FAILURE);
