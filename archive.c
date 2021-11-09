@@ -89,13 +89,12 @@ struct Header* create_header(char *fileName, char option){
                     break;
                 }
             }
-
             for(i=0;i<breakInd;i++){
                 pre[i] = fileTemp[i];
             }
             i++;
             for(;i<length;i++){
-                name[i] = fileTemp[i];
+                name[i-breakInd-1] = fileTemp[i];
             }
         }
         else{
