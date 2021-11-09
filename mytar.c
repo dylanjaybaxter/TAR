@@ -97,7 +97,7 @@ int main(int argc, char* const argv[]){
             for(i=3;i < argc; i++){
                 path = argv[i];
                 /*Check if the file is a TAR file*/
-                if(isTAR(dest)){
+                if(1){/*isTar(dest)*/
                     printContents(path, dest, optMask);
                 }
                 else{
@@ -119,7 +119,7 @@ int main(int argc, char* const argv[]){
             for(i=3;i < argc; i++){
                 path = argv[i];
                 /*Check if the file is a TAR file*/
-                if(isTAR(path)){
+                if(1){
                     extract(argv[i], dest, optMask);
                 }
                 else{
