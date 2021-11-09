@@ -26,7 +26,14 @@ implement of mytar.c
 
 
 int main(int argc, char* const argv[]){
-    char* opts = argv[1];
+    char* opts;
+    if(argc >= 2){
+        opts = argv[1];
+    }
+    else{
+        printf("Usage: tar [txvfS] [dest] [paths to tar]\n");
+        exit(EXIT_FAILURE);
+    }
     uint16_t optMask = 0;
     char opt;
     int i;
@@ -61,11 +68,11 @@ int main(int argc, char* const argv[]){
           printf("Usage: tar [txvfS] [dest] [paths to tar]\n");
           exit(EXIT_FAILURE);
       }
-  }
+    }
 
     /*Initialize Variables for destination and assign*/
     char* dest;
-    if(optMask & FILENAME){
+    if((optMask & FILENAME) || argc >= 3){
         dest = argv[2];
     }else{
         printf("Absent f not supported");
@@ -76,6 +83,10 @@ int main(int argc, char* const argv[]){
     char* path;
     char* paths[argc-3];
     int pathCount =0;
+    if(argc <= 4 ){
+        printf("Usage: tar [txvfS] [dest] [paths to tar]\n");
+        exit(EXIT_FAILURE);
+    }
 
     /*For the remainder of arguments, Perform action*/
     if(optMask & CREATE){
