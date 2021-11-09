@@ -272,11 +272,13 @@ void extract(char **fileNames, int pathcount,
             for(i=0;i<pathcount;i++){
                 printf("%s %s\n",fname, fileNames[i]);
                 if (!(strcmp(fname, fileNames[i]))
-                    || checkpre(fileNames[i], fname)
-                    || (optMask & ALLFLAG)){
+                    || checkpre(fileNames[i], fname)){
                         extractFlag = 1;
                         break;
                     }
+            }
+            if((optMask & ALLFLAG)){
+                extractFlag = 1;
             }
 
             /*Check if the fileNames match */
