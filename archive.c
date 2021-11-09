@@ -88,7 +88,7 @@ struct Header* create_header(char *fileName, char option){
                 }
             }
 
-            memset(pre, '\0', 155);
+            memset(name, '\0', 100);
             if (i == 155){
                 for (; i < 256; i++){
                     name[i-155] = fileTemp[i];
