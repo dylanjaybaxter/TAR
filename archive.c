@@ -86,6 +86,7 @@ struct Header* create_header(char *fileName, char option){
             for (; i < length; i++){
                 if(fileTemp[i] == '/'){
                     breakInd = i;
+                    break;
                 }
             }
 
