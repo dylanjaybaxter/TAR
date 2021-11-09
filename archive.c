@@ -55,11 +55,12 @@ struct Header* create_header(char *fileName, char option){
     lstat(fileName, &file);
 
     /*Write Name and Prefix*/
-    char name[100];
+    char name[100] = {'\0'};
     char pre[155] = {'\0'};
-    char fileTemp[256];
+    char fileTemp[256] = {'\0'};
+    /*Copy Filename into temp list*/
     if(length < 256){
-        strcpy(fileTemp,fileName);
+        strncpy(fileTemp,fileName,length);
     }else{
        perror("File name is too long");
        exit(EXIT_FAILURE);
@@ -68,9 +69,8 @@ struct Header* create_header(char *fileName, char option){
     /*Append slash to directories*/
     if(S_ISDIR(file.st_mode)){
         length = length+1;
-        if(length<256){
-            fileTemp[length-1] = '/';
-            fileTemp[length] = '\0';
+        if(length<255){
+            fileTemp[length] = '/';
         }
         else{
            perror("File name is too long");
@@ -99,6 +99,9 @@ struct Header* create_header(char *fileName, char option){
             }
         }
         else{
+            if(length < 100){
+                name[length] = '\0';
+            }
             strcpy(name, fileTemp);
         }
         strcpy(head->name, name);
