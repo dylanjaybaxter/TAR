@@ -71,11 +71,11 @@ struct Header* create_header(char *fileName, char option){
         if(length<255){
             fileTemp[length] = '/';
         }
-        length++;
         else{
            perror("File name is too long");
            exit(EXIT_FAILURE);
         }
+        length++;
     }
 
     /*Read filname into buffers*/
