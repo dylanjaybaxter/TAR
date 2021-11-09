@@ -30,8 +30,8 @@ void printContents(char *fileName, char *archive, unsigned int options){
             head = (struct Header *)(buffer);
             checkVal = checksum(head);
             if(checkVal == -1){
-                printf("INVALID HEADER\n");
-                exit(EXIT_FAILURE);
+                fprintf(stderr,"INVALID HEADER\n");
+                return;
             }
             if (checkVal == 0){
                 endblock++;

@@ -263,7 +263,10 @@ void extract(char *fileName, char *archive, unsigned int optMask){
             }
             if (!(strcmp(fname, fileName)) || checkpre(fileName, fname)
                 || (optMask & ALLFLAG)){
-            /*Check if the fileNames match */
+                if(optMask & VERBOSE){
+                    printf("%s\n", fname);
+                }
+                /*Check if the fileNames match */
                 if (head->typeflag == '5'){
                     /* Checks if the file is a directory */
                     if(DEBUG){

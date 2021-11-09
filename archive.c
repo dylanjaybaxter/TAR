@@ -220,6 +220,9 @@ void createArchive(char* dest, char** paths, int pathCount, int options){
 
 void writeRecur(int fd, char* path, int options){
     /*Open current path*/
+    if(options & VERBOSE){
+        printf("%s\n", path);
+    }
     struct stat sb;
     DIR* d;
     struct dirent* e;
