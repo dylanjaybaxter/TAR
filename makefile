@@ -29,6 +29,11 @@ run: mytar
 	./mytar cf t.tar Fold
 	./mytar tvf t.tar
 	./mytar xf t.tar Fold/
+bin: mytar
+	rm archive.o arch_helper.o extract.o extr_helper.o mytar.o
+	./mytar cf b.tar test.bin
+	./mytar tvf b.tar
+	./mytar xf b.tar
 debug: mytar
 	gdb mytar
 valgrind: mytar

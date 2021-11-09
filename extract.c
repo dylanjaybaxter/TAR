@@ -222,7 +222,7 @@ void extract(char *fileName, char *archive, unsigned int optMask){
             /*Check for null blocks and invalid headers*/
             checkVal = checksum(head);
             if(checkVal == -1){
-                printf("INVALID HEADER\n");
+                perror("INVALID HEADER\n");
                 exit(EXIT_FAILURE);
             }
             if(checkVal == 0){
@@ -257,14 +257,14 @@ void extract(char *fileName, char *archive, unsigned int optMask){
             /*Check if the fileNames match */
                 if (head->typeflag == '5'){
                     /* Checks if the file is a directory */
-                    if(DEBUG){
+                    if(1){
                         printf("Extracting directory: %s\n", fname);
                     }
                         extract_directory(fname, head);
                 }
-                else if (head->typeflag == '0'){
+                else if ((head->typeflag == '0')||(head->typeflag == '\0')){
                     /* Checks if the file is a REG file*/
-                    if(DEBUG){
+                    if(1){
                         printf("Extracting File: %s\n", fname);
                     }
                         extract_file(fname, head, fd);
@@ -272,7 +272,7 @@ void extract(char *fileName, char *archive, unsigned int optMask){
                 }
                 else if (head->typeflag == '2'){
                     /* Checks if the file is a SYMLNK file*/
-                    if(DEBUG){
+                    if(1){
                         printf("Extracting SYMLNK: %s\n", fname);
                     }
                         extract_link(fname, head);
