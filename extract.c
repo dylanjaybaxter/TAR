@@ -274,6 +274,7 @@ void extract(char **fileNames, int pathcount,
                     || checkpre(fileNames[i], fname)
                     || (optMask & ALLFLAG)){
                         extractFlag = 1;
+                        break;
                     }
             }
 
