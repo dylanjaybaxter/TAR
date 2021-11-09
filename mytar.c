@@ -107,7 +107,7 @@ int main(int argc, char* const argv[]){
             }
         }
         else if(argc == 3){
-            printContents(path, dest, optMask | ALLFLAG);
+            printContents(dest, dest, optMask | ALLFLAG);
         }
         else{
             perror(" Extract Usage: tar [txvfS] [dest] [paths to tar]\n");

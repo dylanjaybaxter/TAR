@@ -7,16 +7,12 @@
 #include <errno.h>
 #include <utime.h>
 #include <time.h>
+#include <string.h>
 #include <sys/time.h>
 #include "contents.h"
 #include "extr_helper.h"
 
-#define CDEBUG 0
-
 void printContents(char *fileName, char *archive, unsigned int options){
-    if(CDEBUG){
-        printf("Printing %s %s %02x\n", fileName, archive, options);
-    }
     int arch;
     if (-1==(arch = open(archive, O_RDONLY, 0666))){
         perror(archive);
@@ -25,7 +21,7 @@ void printContents(char *fileName, char *archive, unsigned int options){
     char buffer[512];
     struct Header *head;
     int numblocks = 0;
-    int readsize;
+    int readsize = 0;
     int checkVal = 0;
     int endblock = 0;
     while((readsize = read(arch, buffer, 512)) > 0){
@@ -57,8 +53,15 @@ void printContents(char *fileName, char *archive, unsigned int options){
                 if(!(strcmp(fname, fileName)) || checkpre(fileName, fname)
                 || (options & ALLFLAG)){
                     if(strlen(fname)){
-                        printf("%s %s %s %s %s %s\n", head->mode, head->uname,
-                            head->gname, head->size, head->mtime, fname);
+                        int size = unoctal(head->size);
+                        time_t mtime = unoctal(head->mtime);
+                        mode_t mode = unoctal(head->mode);
+                        char buf[11] = {'\0'};
+                        char timBuf[18];
+                        permissions(mode, buf, head);
+                        strftime(timBuf, 18, "%Y-%m-%d %H:%M", localtime(&mtime));
+                        printf("%s %s %s %d %s %s\n", buf, head->uname,
+                            head->gname, size, timBuf, fname);
                     }
                 }
             }
@@ -75,4 +78,45 @@ void printContents(char *fileName, char *archive, unsigned int options){
             numblocks--;
         }
     }
+}
+
+void permissions(mode_t mode, char* perm, struct Header* head){
+    int i;
+    for(i=0;i<11;i++){
+        perm[i] = '-';
+    }
+    if ((head->typeflag) == '5'){
+        perm[0] = 'd';
+    }
+    if ((head->typeflag) == '2'){
+        perm[0] = 'l';
+    }
+    if (mode & S_IRUSR){
+        perm[1] = 'r';
+    }
+    if (mode & S_IWUSR){
+        perm[2] = 'w';
+    }
+    if (mode & S_IXUSR){
+        perm[3] = 'x';
+    }
+    if (mode & S_IRGRP){
+        perm[4] = 'r';
+    }
+    if (mode & S_IWGRP){
+        perm[5] = 'w';
+    }
+    if (mode & S_IXGRP){
+        perm[6] = 'x';
+    }
+    if (mode & S_IROTH){
+        perm[7] = 'r';
+    }
+    if (mode & S_IWOTH){
+        perm[8] = 'w';
+    }
+    if (mode & S_IXOTH){
+        perm[9] = 'x';
+    }
+    perm[10] = 0;
 }
