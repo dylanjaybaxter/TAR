@@ -190,7 +190,7 @@ void extract_directory(char *path, struct Header *head){
     }
 }
 
-void extract(char *fileName, char *archive){
+void extract(char *fileName, char *archive, unsigned int optMask){
     /* Searches through the archive for the given file name.
      * If it exists it attempts to extract the file.
      */
@@ -247,7 +247,8 @@ void extract(char *fileName, char *archive){
             if(DEBUG){
                 printf("checking %s and %s\n",fname, fileName);
             }
-            if (!(strcmp(fname, fileName)) || checkpre(fileName, fname)){
+            if (!(strcmp(fname, fileName)) || checkpre(fileName, fname)
+                || (optMask & ALLFLAG)){
             /*Check if the fileNames match */
                 if (head->typeflag == '5'){
                     /* Checks if the file is a directory */

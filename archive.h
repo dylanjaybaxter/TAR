@@ -19,6 +19,7 @@ implement of mytar.c
 #define BLOCK_SIZE 512
 #define MAX_PATH_SIZE 256
 #define DEBUG 0
+#define ALLFLAG 0x40
 
 struct __attribute__((__packed__)) Header{
     /* Header structure

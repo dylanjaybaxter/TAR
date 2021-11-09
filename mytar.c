@@ -72,7 +72,7 @@ int main(int argc, char* const argv[]){
 
     /*Initialize Variables for destination and assign*/
     char* dest;
-    if((optMask & FILENAME) || argc >= 3){
+    if((optMask & FILENAME) && argc >= 3){
         dest = argv[2];
     }else{
         perror("Absent f not supported");
@@ -83,13 +83,14 @@ int main(int argc, char* const argv[]){
     char* path;
     char* paths[argc-3];
     int pathCount =0;
-    if(argc <= 4 ){
-        perror("Usage: tar [txvfS] [dest] [paths to tar]\n");
-        exit(EXIT_FAILURE);
-    }
+
 
     /*For the remainder of arguments, Perform action*/
     if(optMask & CREATE){
+        if(argc < 4){
+            perror("Create Usage: tar [txvfS] [dest] [paths to tar]\n");
+            exit(EXIT_FAILURE);
+        }
         for(i=3;i < argc; i++){
             paths[i-3] = argv[i];
             pathCount++;
@@ -97,10 +98,9 @@ int main(int argc, char* const argv[]){
         createArchive(dest, paths, pathCount, optMask);
     }
     else if(optMask & PRINT){
-        path = argv[3];
         /*Print the contents of the tar file*/
-        if(isTAR(path)){
-            printTAR(1,path);
+        if(isTAR(dest)){
+            printTAR(1,dest);
         }
         else{
             perror("This is not a TAR file");
@@ -108,15 +108,24 @@ int main(int argc, char* const argv[]){
         }
     }
     else if(optMask & EXTRACT){
-        if(argc > 2){
-            path = argv[3];
+        if(argc > 3){
+            for(i=3;i < argc; i++){
+                path = argv[i];
+                /*Check if the file is a TAR file*/
+                if(isTAR(path)){
+                    extract(argv[i], dest, optMask);
+                }
+                else{
+                    perror("This is not a TAR file");
+                    exit(EXIT_FAILURE);
+                }
+            }
         }
-        /*Check if the file is a TAR file*/
-        if(isTAR(path)){
-            extract(path, dest);
+        else if(argc == 3){
+            extract(dest, dest, optMask | ALLFLAG);
         }
         else{
-            perror("This is not a TAR file");
+            perror(" Extract Usage: tar [txvfS] [dest] [paths to tar]\n");
             exit(EXIT_FAILURE);
         }
     }
