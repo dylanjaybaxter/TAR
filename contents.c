@@ -24,6 +24,7 @@ void printContents(char *fileName, char *archive, unsigned int options){
     int readsize = 0;
     int checkVal = 0;
     int endblock = 0;
+    int i;
     while((readsize = read(arch, buffer, 512)) > 0){
         if (numblocks == 0){
             head = (struct Header *)(buffer);
@@ -48,11 +49,18 @@ void printContents(char *fileName, char *archive, unsigned int options){
             }
             char fname[257] = {0};
             char delim[2] = "/\0";
-            strcpy(fname, head->prefix);
+            for(i=0;i<155;i++){
+                if(head->prefix[i] != '\0'){
+                    fname[i] = head->prefix[i]
+                }
+                else{
+                    break;
+                }
+            }
             if(strlen(fname)){
                 strcat(fname, delim);
             }
-            strncat(fname, head->name, 256);
+            strncat(fname, head->name, 100);
             if (options & VERBOSE){
                 if(!(strcmp(fname, fileName)) || checkpre(fileName, fname)
                 || (options & ALLFLAG)){
