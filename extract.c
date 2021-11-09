@@ -121,7 +121,6 @@ void extract_file(char *path, struct Header *head, int fdHead){
                 perror("Open Empty");
                 exit(EXIT_FAILURE);
             }
-            char buffer[512] = {0};
             if(-1 == read(fdHead, buffer, 512)){
                 perror("Write Single Body Block");
                 exit(EXIT_FAILURE);
@@ -167,6 +166,7 @@ void extract_link(char *path, struct Header *head){
      * extracts its contents from the archive into a new file with the
      * given path
      */
+     ensureDir(path);
      if (symlink(head->linkname, path) == -1){
          if(errno == EEXIST){
              return;
@@ -183,6 +183,11 @@ void extract_directory(char *path, struct Header *head){
      * the given archive *
      */
     mode_t e_mode = unoctal(head->mode);
+    if(e_mode & 0111){
+        e_mode = 0777;
+    }else{
+        e_mode = 0666;
+    }
     ensureDir(path);
     if (mkdir(path, e_mode) == -1){
         if(errno == EEXIST){
@@ -247,7 +252,9 @@ void extract(char *fileName, char *archive, unsigned int optMask){
                    numblocks = (size / 512) + 1;
             }
             char fname[256] = {0};
+            char delim[2] = "/\0";
             strcpy(fname, head->prefix);
+            strcat(fname, delim);
             strcat(fname, head->name);
             if(DEBUG){
                 printf("checking %s and %s\n",fname, fileName);

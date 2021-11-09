@@ -48,6 +48,7 @@ struct Header* create_header(char *fileName, char option){
     char bigOct[12] = {0}; /* Max Octal Size for 12 byte vars */
     int length = strlen(fileName);
     int i;
+    int breakInd;
     int checksum = 0;
 
     /*Stat file*/
@@ -79,23 +80,21 @@ struct Header* create_header(char *fileName, char option){
     }
 
     /*Read filname into buffers*/
-    if (length <= 256 || option == 'S'){
+    if (length <= 256 || (option & STRICT)){
         if(length > 100){
-            for (i = 0; i < 155; i++){
-                pre[i] = fileTemp[i];
-                if(fileTemp[i] == '\0'){
-                    break;
+            i = length-100;
+            for (; i < length; i++){
+                if(fileTemp[i] == '/'){
+                    breakInd = i;
                 }
             }
 
-            memset(name, '\0', 100);
-            if (i == 155){
-                for (; i < 256; i++){
-                    name[i-155] = fileTemp[i];
-                    if(fileTemp[i] == '\0'){
-                        break;
-                    }
-                }
+            for(i=0;i<breakInd;i++){
+                pre[i] = fileTemp[i];
+            }
+            i++;
+            for(;i<length;i++){
+                name[i] = fileTemp[i];
             }
         }
         else{
