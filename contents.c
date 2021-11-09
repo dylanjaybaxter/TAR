@@ -51,7 +51,7 @@ void printContents(char *fileName, char *archive, unsigned int options){
             char delim[2] = "/\0";
             for(i=0;i<155;i++){
                 if(head->prefix[i] != '\0'){
-                    fname[i] = head->prefix[i]
+                    fname[i] = head->prefix[i];
                 }
                 else{
                     break;
