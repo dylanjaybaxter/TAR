@@ -61,7 +61,7 @@ void printContents(char *fileName, char *archive, unsigned int options){
                         permissions(mode, buf, head);
                         strftime(timBuf, 18, "%Y-%m-%d %H:%M",
                         localtime(&mtime));
-                        printf("%s %s %s %d %s %s\n", buf, head->uname,
+                        printf("%s %s/%s %14d %s %s\n", buf, head->uname,
                             head->gname, size, timBuf, fname);
                     }
                 }

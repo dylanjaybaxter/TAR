@@ -116,7 +116,7 @@ void extract_file(char *path, struct Header *head, int fdHead){
             }
         }
         else{
-            int fd = 0;
+            fd = 0;
             if(-1 == (fd = open(path, O_WRONLY | O_CREAT |O_TRUNC, 0666))){
                 perror("Open Empty");
                 exit(EXIT_FAILURE);
@@ -133,6 +133,7 @@ void extract_file(char *path, struct Header *head, int fdHead){
         }
     }
     else{
+        fd = 0;
         if(-1 ==(fd = open(path, O_CREAT|O_TRUNC|O_WRONLY, 0666))){
             perror(path);
             exit(EXIT_FAILURE);
