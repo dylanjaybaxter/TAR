@@ -13,6 +13,10 @@ implement of mytar.c
 #include <dirent.h>
 #include <limits.h>
 #include "arch_helper.h"
+#include "extr_helper.h"
+#include "extract.h"
+
+#define MAXPATH 512
 
 /*Converts and integer into and ascii string in octal*/
 char *octalConvert(unsigned int n, char *octal, int len){
@@ -63,6 +67,49 @@ void fillArray(char* buff, char fill, int len){
 }
 
 int isTAR(char* path){
+    int fd;
+    char buffer[MAXPATH];
+    struct Header* head;
+    int numblocks = 0;
+    int endblock = 0;
+    int readsize = 0;
+    int checkVal = 0;
+
+    if((fd = open(path, O_CREAT|O_TRUNC|O_WRONLY, 0666)) == -1){
+        perror("Open destination");
+        exit(EXIT_FAILURE);
+    }
+
+    while((readsize = read(fd, buffer, MAXPATH)) > 0){
+        if (numblocks == 0){
+            head = (struct Header *)(buffer);
+            /*Check for null blocks and invalid headers*/
+            checkVal = checksum(head);
+            if(checkVal == -1){
+                perror("INVALID HEADER\n");
+                exit(EXIT_FAILURE);
+            }
+            if(checkVal == 0){
+                endblock++;
+                if(endblock < 1){
+                    return 1;
+                }
+            }
+            if(!strcmp(head->magic,"ustar") ||strcmp(head->magic,"ustar ")){
+                return 0;
+            }
+
+            int size = unoctal(head->size);
+            /* If there is a remainder we need and entire 512 byte block
+            */
+            if ((size % 512) == 0){
+                numblocks = size / MAXPATH;
+            }
+            else{
+                numblocks = (size / MAXPATH) + 1;
+            }
+        }
+    }
     return 1;
 }
 
