@@ -116,7 +116,11 @@ void extract_file(char *path, struct Header *head, int fdHead){
             }
         }
         else{
-            int fd = open(path, O_WRONLY | O_CREAT |O_TRUNC, 0666);
+            int fd = 0;
+            if(-1 == open(path, O_WRONLY | O_CREAT |O_TRUNC, 0777)){
+                perror("Open Empty");
+                exit(EXIT_FAILURE);
+            }
             char buffer[512] = {0};
             if(-1 == read(fdHead, buffer, 512)){
                 perror("Write Single Body Block");
@@ -129,7 +133,7 @@ void extract_file(char *path, struct Header *head, int fdHead){
         }
     }
     else{
-        if(-1 ==(fd = open(path, O_CREAT|O_TRUNC, 0777))){
+        if(-1 ==(fd = open(path, O_CREAT|O_TRUNC|O_WRONLY, 0777))){
             perror(path);
             exit(EXIT_FAILURE);
         }
