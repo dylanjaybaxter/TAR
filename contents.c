@@ -46,13 +46,13 @@ void printContents(char *fileName, char *archive, unsigned int options){
             else{
                 numblocks = (size / 512) + 1;
             }
-            char fname[256] = {0};
+            char fname[257] = {0};
             char delim[2] = "/\0";
             strcpy(fname, head->prefix);
             if(strlen(fname)){
                 strcat(fname, delim);
             }
-            strcat(fname, head->name);
+            strncat(fname, head->name, 256);
             if (options & VERBOSE){
                 if(!(strcmp(fname, fileName)) || checkpre(fileName, fname)
                 || (options & ALLFLAG)){
