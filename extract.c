@@ -172,7 +172,7 @@ void extract_directory(char *path, struct Header *head){
      * the given archive *
      */
     mode_t e_mode = unoctal(head->mode);
-    if(e_mode & 0111){
+    if(giveExecute(e_mode)){
         e_mode = 0777;
     }else{
         e_mode = 0666;

@@ -66,9 +66,9 @@ void ensureDir(char* path){
     for(i=0;i<=ind;i++){
         dirPath[i] = path[i];
         if((path[i] == '/') && (i!=0)){
-            if (mkdir(dirPath, 0666) == -1){
+            if (mkdir(dirPath, 0777) == -1){
                 if(errno != EEXIST){
-                    perror("mkdir");
+                    perror(dirPath);
                     exit(EXIT_FAILURE);
                 }
             }
