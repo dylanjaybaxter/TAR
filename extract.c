@@ -240,11 +240,23 @@ void extract(char *fileName, char *archive, unsigned int optMask){
             else{
                    numblocks = (size / 512) + 1;
             }
-            char fname[256] = {0};
+            /*Parse Path name*/
+            char fname[257] = {0};
             char delim[2] = "/\0";
-            strcpy(fname, head->prefix);
-            strcat(fname, delim);
-            strcat(fname, head->name);
+            for(i=0;i<155;i++){
+                if(head->prefix[i] != '\0'){
+                    fname[i] = head->prefix[i];
+                }
+                else{
+                    break;
+                }
+            }
+            if(strlen(fname)){
+                strcat(fname, delim);
+            }
+            strncat(fname, head->name, 100);
+
+            /*Find type*/
             if(DEBUG){
                 printf("checking %s and %s\n",fname, fileName);
             }
