@@ -270,7 +270,6 @@ void extract(char **fileNames, int pathcount,
             /*Find type*/
             int extractFlag = 0;
             for(i=0;i<pathcount;i++){
-                printf("%s %s\n",fname, fileNames[i]);
                 if (!(strcmp(fname, fileNames[i]))
                     || checkpre(fileNames[i], fname)){
                         extractFlag = 1;
@@ -282,7 +281,6 @@ void extract(char **fileNames, int pathcount,
             }
 
             /*Check if the fileNames match */
-            printf("%d\n", extractFlag);
             if (extractFlag){
                 if(optMask & VERBOSE){
                     printf("%s\n", fname);
