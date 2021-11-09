@@ -207,6 +207,7 @@ void extract(char *fileName, char *archive, unsigned int optMask){
     int readsize = 0;
     int checkVal = 0;
     int endblock = 0;
+    int i = 0;
     while((readsize = read(fd, buffer, 512)) > 0){
         if(DEBUG){
             printf("Reading block of size %d\n", readsize);
