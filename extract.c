@@ -25,9 +25,9 @@ int giveExecute(mode_t e_mode){
         (e_mode & S_IXGRP) ||
         (e_mode & S_IXOTH)){
 
-        return 0;
+        return 1;
     }
-    return -1;
+    return 0;
 }
 
 int checksum(struct Header *head){
@@ -78,62 +78,51 @@ void extract_file(char *path, struct Header *head, int fdHead){
     utime(path, oldtime);*/
     char buffer[512] = {0};
     ensureDir(path);
-    if(e_size > 0){
-        if (giveExecute(e_mode) == 0){
-            if(-1 ==(fd = open(path, O_CREAT|O_TRUNC|O_WRONLY,0777))){
-                perror(path);
-                exit(EXIT_FAILURE);
-            }
-            if(DEBUG){
-                printf("File Descriptor is %d\n", fd);
-            }
+    if(giveExecute(e_mode)){
+        e_mode = 0777;
+    }else{
+        e_mode = 0666;
+    }
 
-            while (i >= 512){
-                if(-1 == read(fdHead, buffer, 512)){
-                    perror("Read Body TAR");
-                    exit(EXIT_FAILURE);
-                }
-                if(DEBUG){
-                    printf("Writing Chunk of size %d", 512);
-                }
-                if(-1 == write(fd, buffer, 512)){
-                    perror("Write Body");
-                    exit(EXIT_FAILURE);
-                }
-                i -= 512;
-            }
-            if(-1==read(fdHead, buffer, 512)){
-                perror("Read Final Block");
+    if(e_size > 0){
+        if(-1 ==(fd = open(path, O_CREAT|O_TRUNC|O_WRONLY,e_mode))){
+            perror(path);
+            exit(EXIT_FAILURE);
+        }
+        if(DEBUG){
+            printf("File Descriptor is %d\n", fd);
+        }
+
+        while (i >= 512){
+            if(-1 == read(fdHead, buffer, 512)){
+                perror("Read Body TAR");
                 exit(EXIT_FAILURE);
             }
             if(DEBUG){
-                printf("Writing Chunk of size %d\n", i);
-                printf("Writing: %d %s %d\n", fd, buffer, i);
+                printf("Writing Chunk of size %d", 512);
             }
-            if(-1==write(fd, buffer, i)){
-                perror("Write Final Block");
+            if(-1 == write(fd, buffer, 512)){
+                perror("Write Body");
                 exit(EXIT_FAILURE);
             }
+            i -= 512;
         }
-        else{
-            fd = 0;
-            if(-1 == (fd = open(path, O_WRONLY | O_CREAT |O_TRUNC, 0666))){
-                perror("Open Empty");
-                exit(EXIT_FAILURE);
-            }
-            if(-1 == read(fdHead, buffer, 512)){
-                perror("Write Single Body Block");
-                exit(EXIT_FAILURE);
-            }
-            if(-1 == write(fd, buffer, e_size)){
-                perror("Write Single Body Block");
-                exit(EXIT_FAILURE);
-            }
+        if(-1==read(fdHead, buffer, 512)){
+            perror("Read Final Block");
+            exit(EXIT_FAILURE);
+        }
+        if(DEBUG){
+            printf("Writing Chunk of size %d\n", i);
+            printf("Writing: %d %s %d\n", fd, buffer, i);
+        }
+        if(-1==write(fd, buffer, i)){
+            perror("Write Final Block");
+            exit(EXIT_FAILURE);
         }
     }
     else{
         fd = 0;
-        if(-1 ==(fd = open(path, O_CREAT|O_TRUNC|O_WRONLY, 0666))){
+        if(-1 ==(fd = open(path, O_CREAT|O_TRUNC|O_WRONLY, e_mode))){
             perror(path);
             exit(EXIT_FAILURE);
         }
