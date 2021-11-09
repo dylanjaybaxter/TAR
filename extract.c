@@ -117,7 +117,7 @@ void extract_file(char *path, struct Header *head, int fdHead){
         }
         else{
             int fd = 0;
-            if(-1 == open(path, O_WRONLY | O_CREAT |O_TRUNC, 0666)){
+            if(-1 == (fd = open(path, O_WRONLY | O_CREAT |O_TRUNC, 0666))){
                 perror("Open Empty");
                 exit(EXIT_FAILURE);
             }

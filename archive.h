@@ -18,7 +18,7 @@ implement of mytar.c
 
 #define BLOCK_SIZE 512
 #define MAX_PATH_SIZE 256
-#define DEBUG 0
+#define DEBUG 1
 #define CREATE 0x01
 #define PRINT 0x02
 #define EXTRACT 0x04
