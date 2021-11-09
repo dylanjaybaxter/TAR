@@ -163,7 +163,7 @@ void extract_link(char *path, struct Header *head){
      * given path
      */
      if (symlink(head->linkname, path) == -1){
-         if(errno = EEXIST){
+         if(errno == EEXIST){
              return;
          }
          else{
@@ -180,7 +180,7 @@ void extract_directory(char *path, struct Header *head){
     mode_t e_mode = unoctal(head->mode);
     ensureDir(path);
     if (mkdir(path, e_mode) == -1){
-        if(errno = EEXIST){
+        if(errno == EEXIST){
             return;
         }
         else{
