@@ -394,22 +394,3 @@ void writePad(int fd){
         exit(EXIT_FAILURE);
     }
 }
-
-
-void extractArchive(char* dest, char* path){
-    /*Initialize Variables*/
-
-    /*Open TAR File*/
-
-    /*Confirm TAR File*/
-
-    /**/
-}
-
-void printTAR(int fd, char* path){
-
-}
-
-void printFile(int fd, char* path){
-
-}

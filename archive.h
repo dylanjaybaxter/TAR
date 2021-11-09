@@ -19,6 +19,12 @@ implement of mytar.c
 #define BLOCK_SIZE 512
 #define MAX_PATH_SIZE 256
 #define DEBUG 0
+#define CREATE 0x01
+#define PRINT 0x02
+#define EXTRACT 0x04
+#define VERBOSE 0x08
+#define FILENAME 0x10
+#define STRICT 0x20
 #define ALLFLAG 0x40
 
 struct __attribute__((__packed__)) Header{
@@ -57,9 +63,3 @@ void writeheader(int fd, char* path, int options);
 void writebody(int fd, char* path);
 
 void writePad(int fd);
-
-void extractArchive(char* dest, char* path);
-
-void printTAR(int fd, char* path);
-
-void printFile(int fd, char* path);

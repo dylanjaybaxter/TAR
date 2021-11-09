@@ -16,13 +16,7 @@ implement of mytar.c
 #include<pwd.h>
 #include<sys/stat.h>
 #include<stdlib.h>
-#include"extract.h"
-#define CREATE 0x01
-#define PRINT 0x02
-#define EXTRACT 0x04
-#define VERBOSE 0x08
-#define FILENAME 0x10
-#define STRICT 0x20
+#include"contents.h"
 
 
 int main(int argc, char* const argv[]){
@@ -99,11 +93,24 @@ int main(int argc, char* const argv[]){
     }
     else if(optMask & PRINT){
         /*Print the contents of the tar file*/
-        if(isTAR(dest)){
-            printTAR(1,dest);
+        if(argc > 3){
+            for(i=3;i < argc; i++){
+                path = argv[i];
+                /*Check if the file is a TAR file*/
+                if(isTAR(dest)){
+                    printContents(path, dest, optMask);
+                }
+                else{
+                    perror("This is not a TAR file");
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
+        else if(argc == 3){
+            printContents(path, dest, optMask | ALLFLAG);
         }
         else{
-            perror("This is not a TAR file");
+            perror(" Extract Usage: tar [txvfS] [dest] [paths to tar]\n");
             exit(EXIT_FAILURE);
         }
     }
