@@ -31,7 +31,7 @@ int main(int argc, char* const argv[]){
         opts = argv[1];
     }
     else{
-        printf("Usage: tar [txvfS] [dest] [paths to tar]\n");
+        perror("Usage: tar [txvfS] [dest] [paths to tar]");
         exit(EXIT_FAILURE);
     }
     uint16_t optMask = 0;
@@ -65,7 +65,7 @@ int main(int argc, char* const argv[]){
       }
       /*Reject any other argument*/
       else{
-          printf("Usage: tar [txvfS] [dest] [paths to tar]\n");
+          perror("Usage: tar [txvfS] [dest] [paths to tar]\n");
           exit(EXIT_FAILURE);
       }
     }
@@ -75,7 +75,7 @@ int main(int argc, char* const argv[]){
     if((optMask & FILENAME) || argc >= 3){
         dest = argv[2];
     }else{
-        printf("Absent f not supported");
+        perror("Absent f not supported");
         exit(EXIT_FAILURE);
     }
 
@@ -84,7 +84,7 @@ int main(int argc, char* const argv[]){
     char* paths[argc-3];
     int pathCount =0;
     if(argc <= 4 ){
-        printf("Usage: tar [txvfS] [dest] [paths to tar]\n");
+        perror("Usage: tar [txvfS] [dest] [paths to tar]\n");
         exit(EXIT_FAILURE);
     }
 
@@ -103,7 +103,7 @@ int main(int argc, char* const argv[]){
             printTAR(1,path);
         }
         else{
-            printf("This is not a TAR file");
+            perror("This is not a TAR file");
             exit(EXIT_FAILURE);
         }
     }
@@ -116,12 +116,12 @@ int main(int argc, char* const argv[]){
             extract(path, dest);
         }
         else{
-            printf("This is not a TAR file");
+            perror("This is not a TAR file");
             exit(EXIT_FAILURE);
         }
     }
     else{
-        printf("You never should have come here\n");
+        perror("You never should have come here\n");
         exit(EXIT_FAILURE);
     }
     return 0;

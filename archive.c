@@ -231,8 +231,8 @@ void writeRecur(int fd, char* path, int options){
         printf("Recursive Statting: %s\n", path);
     }
     if(lstat(path, &sb) == -1){
-        perror("Recursive Stat");
-        exit(EXIT_FAILURE);
+        /*perror("Recursive Stat");*/
+        return;
     }
 
     /*If path is a file, write contents to TAR*/
