@@ -122,7 +122,7 @@ int main(int argc, char* const argv[]){
             }
             /*Check if the file is a TAR file*/
             if(isTAR(dest, optMask)){
-                printf("Extract %s %d\n", dest, pathcount);
+                printf("Extract %s %d\n", dest, pathCount);
                 extract(paths, pathCount, dest, optMask);
             }
             else{
