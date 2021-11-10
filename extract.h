@@ -1,3 +1,9 @@
+/*
+CPE 357 Asgn4
+Author: Dylan Baxter (dybaxter), Van Park (vpark05)
+File: extract.h
+Description: This file contains prototypes for extract.c
+*/
 #include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>

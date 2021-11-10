@@ -1,9 +1,9 @@
 /*
 CPE 357 Asgn4
-Author: Dylan Baxter (dybaxter), Van Park (vpark)
-File: mytar.c
-Description: This file contains main functionality for home
-implement of mytar.c
+Author: Dylan Baxter (dybaxter), Van Park (vpark05)
+File: arch_helper.h
+Description: This file contains prototypes for functions that create
+tar archives
 */
 #include<stdio.h>
 #include<stdlib.h>
@@ -16,7 +16,7 @@ implement of mytar.c
 
 char *octalConvert(unsigned int n, char *octal, int len);
 
-int isTAR(char* path);
+int isTAR(char* path, unsigned int options);
 
 int insert_special_int(char * where, size_t size, int32_t val);
 

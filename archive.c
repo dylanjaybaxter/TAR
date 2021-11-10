@@ -40,7 +40,7 @@ struct Header* init_Header(){
     return head;
 }
 
-struct Header* create_header(char *fileName, char option){
+struct Header* create_header(char *fileName, char options){
     /* Takes the given file name and creates a header. It also takes in an
      * option variable to check if the Strict mode has been set */
     struct Header* head = init_Header();
@@ -81,7 +81,7 @@ struct Header* create_header(char *fileName, char option){
     }
 
     /*Read filname into buffers*/
-    if (length <= 256 || (option & STRICT)){
+    if (length <= 256 || (options & STRICT)){
         if(length > 100){
             i = length-100;
             for (; i < length; i++){
@@ -117,12 +117,16 @@ struct Header* create_header(char *fileName, char option){
     strcpy(head->mode, octalConvert((file.st_mode & 0x1FF), smallOct, 8));
 
     /*Convert usable and write uid*/
-    if(insert_special_int(head->uid, 8, file.st_uid)){
-        perror("insert_special_int");
-        exit(EXIT_FAILURE);
+    if(!(options & STRICT)){
+        if(insert_special_int(head->uid, 8, file.st_uid)){
+            perror("insert_special_int");
+            exit(EXIT_FAILURE);
+        }
     }
-    memset(smallOct, '0', 8);
-    /*strcpy(, usableUID);*/
+    else{
+        memset(smallOct, '0', 8);
+        strcpy(head->uid, octalConvert(file.st_uid, smallOct, 8));
+    }
 
     /*Write gid*/
     memset(smallOct, '0', 8);

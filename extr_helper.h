@@ -1,3 +1,9 @@
+/*
+CPE 357 Asgn4
+Author: Dylan Baxter (dybaxter), Van Park (vpark05)
+File: extr_helper.h
+Description: This file contains prototypes for extr_helper.h
+*/
 #include <string.h>
 #include <stdlib.h>
 #include <arpa/inet.h>

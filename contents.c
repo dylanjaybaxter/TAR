@@ -1,3 +1,10 @@
+/*
+CPE 357 Asgn4
+Author: Dylan Baxter (dybaxter), Van Park (vpark05)
+File: contents.c
+Description: This file contains functions used to print contents
+of a TAR file
+*/
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

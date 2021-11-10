@@ -1,9 +1,9 @@
 /*
 CPE 357 Asgn4
-Author: Dylan Baxter (dybaxter), Van Park (vpark)
-File: mytar.c
-Description: This file contains main functionality for home
-implement of mytar.c
+Author: Dylan Baxter (dybaxter), Van Park (vpark05)
+File: arch_helper.c
+Description: This file contains functions used to create
+tar archives
 */
 #include<string.h>
 #include <sys/types.h>
@@ -66,7 +66,7 @@ void fillArray(char* buff, char fill, int len){
     }
 }
 
-int isTAR(char* path){
+int isTAR(char* path, unsigned int options){
     int fd;
     char buffer[MAXPATH];
     struct Header* head;
@@ -76,7 +76,7 @@ int isTAR(char* path){
     int checkVal = 0;
 
     if((fd = open(path, O_RDONLY, 0666)) == -1){
-        perror("Open destination");
+        perror("Open isTAR");
         exit(EXIT_FAILURE);
     }
 
@@ -86,8 +86,7 @@ int isTAR(char* path){
             /*Check for null blocks and invalid headers*/
             checkVal = checksum(head);
             if(checkVal == -1){
-                perror("INVALID HEADER\n");
-                exit(EXIT_FAILURE);
+                return 0;
             }
             if(checkVal == 0){
                 endblock++;
@@ -95,20 +94,43 @@ int isTAR(char* path){
                     return 1;
                 }
             }
-            if(!strcmp(head->magic,"ustar") ||strcmp(head->magic,"ustar ")){
-                return 0;
-            }
-
-            int size = unoctal(head->size);
-            /* If there is a remainder we need and entire 512 byte block
-            */
-            if ((size % 512) == 0){
-                numblocks = size / MAXPATH;
-            }
             else{
-                numblocks = (size / MAXPATH) + 1;
+                if(options & STRICT){
+                    if(!((head->version[0] == '0')
+                    && (head->version[1] == '0'))){
+                        return 0;
+                    }
+                    if(!strcmp(head->magic,"ustar")){
+                        return 0;
+                    }
+                }else{
+                    if((head->magic[0] != 'u') ||
+                    (head->magic[1] != 's') ||
+                    (head->magic[2] != 't') ||
+                    (head->magic[3] != 'a') ||
+                    (head->magic[4] != 'r')){
+                        return 0;
+                    }
+                }
+
+                int size = unoctal(head->size);
+                /* If there is a remainder we need and entire 512 byte block
+                */
+                if ((size % 512) == 0){
+                    numblocks = size / MAXPATH;
+                }
+                else{
+                    numblocks = (size / MAXPATH) + 1;
+                }
             }
         }
+        else{
+            numblocks--;
+        }
+    }
+    if(-1 == close(fd)){
+        perror("Close In isTAR");
+        exit(EXIT_FAILURE);
     }
     return 1;
 }

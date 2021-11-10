@@ -1,8 +1,18 @@
+/*
+CPE 357 Asgn4
+Author: Dylan Baxter (dybaxter), Van Park (vpark05)
+File: mytar.c
+Description: This file contains functions to aid extraction of files from
+tar archives
+*/
 #include "extr_helper.h"
 #include <math.h>
 #include <stdlib.h>
 
 uint32_t extract_special_int(char *where, int len){
+    /* Implements functions that are meant to
+     * fix issues with large UIDs
+     */
     int32_t val = -1;
     if((len >= sizeof(val)) && (where[0] & 0x80)){
         val = *(int32_t *)(where+len-sizeof(val));
@@ -13,6 +23,9 @@ uint32_t extract_special_int(char *where, int len){
 
 
 double pow2(double base, double power){
+    /* Our own version of the pow() functions as there were issues
+     * with implementing the normal pow() functions.
+     */
     int i;
     int sum = 1;
     for(i = 1; i <= power; i++){
@@ -37,6 +50,9 @@ int checkpre(char* pre, char* str){
 }
 
 int unoctal(char *octal){
+    /* Takes an octal string and converts it into
+     * a decimal integer representation
+     */
     int len = strlen(octal);
     int i;
     double power = 0;
@@ -53,6 +69,8 @@ int unoctal(char *octal){
 }
 
 void ensureDir(char* path){
+    /* Takes a given path and ensures that it has the necessary
+     * directories before its extraction */
     int len = strlen(path);
     char dirPath[256] = {'\0'};
     int i;

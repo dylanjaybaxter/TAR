@@ -98,7 +98,7 @@ int main(int argc, char* const argv[]){
                 pathCount++;
             }
             /*Check if the file is a TAR file*/
-            if(1){
+            if(isTAR(dest, optMask)){
                 printContents(paths, pathCount, dest, optMask);
             }
             else{
@@ -121,7 +121,7 @@ int main(int argc, char* const argv[]){
                 pathCount++;
             }
             /*Check if the file is a TAR file*/
-            if(1){
+            if(isTAR(dest, optMask)){
                 extract(paths, pathCount, dest, optMask);
             }
             else{

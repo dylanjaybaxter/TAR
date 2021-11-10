@@ -1,8 +1,9 @@
 /*
 CPE 357 Asgn4
-Author: Dylan Baxter (dybaxter), Van Park (vpark)
+Author: Dylan Baxter (dybaxter), Van Park (vpark05)
 File: extract.c
-Description: This file contains functions necessary for extraction
+Description: This file contains functions necessary for extraction from
+tar archives
 */
 #include <sys/types.h>
 #include <sys/stat.h>
