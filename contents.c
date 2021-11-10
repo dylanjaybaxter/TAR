@@ -12,8 +12,9 @@
 #include "contents.h"
 #include "extr_helper.h"
 
-void printContents(char *fileName, char *archive, unsigned int options){
-    /* Takes in a given file name, archive, and option mask. 
+void printContents(char **fileNames,int pathcount,
+     char *archive, unsigned int options){
+    /* Takes in a given file name, archive, and option mask.
      * Prints the contents of the archive
      */
     int arch;
@@ -70,10 +71,24 @@ void printContents(char *fileName, char *archive, unsigned int options){
                 strcat(fname, delim);
             }
             strncat(fname, head->name, 100);
+
+            /*Determine whether to write*/
+            /*Find type*/
+            int extractFlag = 0;
+            for(i=0;i<pathcount;i++){
+                if (!(strcmp(fname, fileNames[i]))
+                    || checkpre(fileNames[i], fname)){
+                        extractFlag = 1;
+                        break;
+                    }
+            }
+            if((options & ALLFLAG)){
+                extractFlag = 1;
+            }
+
             if (options & VERBOSE){
                 /* Check if verbose option is set */
-                if(!(strcmp(fname, fileName)) || checkpre(fileName, fname)
-                || (options & ALLFLAG)){
+                if(extractFlag){
                     /* Check if you run into a file that you want to print */
                     if(strlen(fname)){
                         int size = unoctal(head->size);
@@ -93,8 +108,7 @@ void printContents(char *fileName, char *archive, unsigned int options){
                 }
             }
             else{
-                if(!(strcmp(fname, fileName)) || checkpre(fileName, fname)
-                || (options & ALLFLAG)){
+                if(extractFlag){
                     /*If verbose is not set just print the name of the file */
                     if(strlen(fname)){
                         printf("%s\n", fname);

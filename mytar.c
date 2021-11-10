@@ -74,7 +74,6 @@ int main(int argc, char* const argv[]){
     }
 
     /*Initialize vars for actions*/
-    char* path;
     char* paths[argc-3];
     int pathCount =0;
 
@@ -95,19 +94,20 @@ int main(int argc, char* const argv[]){
         /*Print the contents of the tar file*/
         if(argc > 3){
             for(i=3;i < argc; i++){
-                path = argv[i];
-                /*Check if the file is a TAR file*/
-                if(1){/*isTar(dest)*/
-                    printContents(path, dest, optMask);
-                }
-                else{
-                    perror("This is not a TAR file");
-                    exit(EXIT_FAILURE);
-                }
+                paths[i-3] = argv[i];
+                pathCount++;
+            }
+            /*Check if the file is a TAR file*/
+            if(1){
+                printContents(paths, pathCount, dest, optMask);
+            }
+            else{
+                perror("This is not a TAR file");
+                exit(EXIT_FAILURE);
             }
         }
         else if(argc == 3){
-            printContents(dest, dest, optMask | ALLFLAG);
+            printContents(paths, pathCount, dest, optMask | ALLFLAG);
         }
         else{
             perror(" Extract Usage: tar [txvfS] [dest] [paths to tar]\n");
