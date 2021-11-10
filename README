@@ -1,8 +1,4 @@
 CPE 357 Asgn4
 Author: Dylan Baxter (dybaxter), Van Park (vpark05)
 Special Instructions: None
-Other Notes: Using perror to print to stdout. For some reason
-when replacing perror(->fprintf(stderr, test 42 times out. I cannot fathom
-why this addition effects anything let alone that one particular test,
-but I have tested this and have determined that a single fprintf, even in the
-first check of mytar.c is enough to trigger it.
+Other Notes: None
