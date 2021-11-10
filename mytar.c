@@ -59,7 +59,7 @@ int main(int argc, char* const argv[]){
       }
       /*Reject any other argument*/
       else{
-          perror("Usage: tar [txvfS] [dest] [paths to tar]\n");
+          fprintf(stderr,"Usage: tar [txvfS] [dest] [paths to tar]\n");
           exit(EXIT_FAILURE);
       }
     }
