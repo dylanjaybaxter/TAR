@@ -25,7 +25,7 @@ int main(int argc, char* const argv[]){
         opts = argv[1];
     }
     else{
-        perror("Usage: tar [txvfS] [dest] [paths to tar]");
+        fprintf(stderr,"Usage: tar [txvfS] [dest] [paths to tar]");
         exit(EXIT_FAILURE);
     }
     uint16_t optMask = 0;
