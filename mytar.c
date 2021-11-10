@@ -124,7 +124,7 @@ int main(int argc, char* const argv[]){
             if(isTAR(dest, optMask)){
                 printf("Extract %s %d\n", dest, pathCount);
                 for(i=0;i<pathCount;i++){
-                    print("%s\n", paths[i]);
+                    printf("%s\n", paths[i]);
                 }
                 extract(paths, pathCount, dest, optMask);
             }
