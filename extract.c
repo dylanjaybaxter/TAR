@@ -212,7 +212,7 @@ void extract(char **fileNames, int pathcount,
     printf("Entering While Loop:");
     /*For each header in the file*/
     while((readsize = read(fd, buffer, 512)) > 0){
-        if(1){
+        if(DEBUG){
             printf("Reading block of size %d\n", readsize);
         }
         /*If not a body block*/
@@ -232,83 +232,85 @@ void extract(char **fileNames, int pathcount,
                 if(DEBUG){
                     printf(" End Block %d Encountered \n", endblock);
                 }
-                if(endblock < 1){
+                if(endblock > 1){
                     if(DEBUG){
                         printf("EOF \n");
                     }
                     return;
                 }
             }
-
-            /*Get Size of body and calculate number of body blocks to skip*/
-            int size = unoctal(head->size);
-
-            /* If there is a remainder we need and entire 512 byte block
-            */
-            if ((size % 512) == 0){
-                numblocks = size / 512;
-            }
             else{
-                   numblocks = (size / 512) + 1;
-            }
+                /*Get Size of body and calculate number of body blocks to skip*/
+                int size = unoctal(head->size);
 
-            /*Parse Path name*/
-            char fname[257] = {0};
-            char delim[2] = "/\0";
-            for(i=0;i<155;i++){
-                if(head->prefix[i] != '\0'){
-                    fname[i] = head->prefix[i];
+                /* If there is a remainder we need and entire 512 byte block
+                */
+                if ((size % 512) == 0){
+                    numblocks = size / 512;
                 }
                 else{
-                    break;
+                       numblocks = (size / 512) + 1;
                 }
-            }
-            if(strlen(fname)){
-                strcat(fname, delim);
-            }
-            strncat(fname, head->name, 100);
 
-            /*Find type*/
-            int extractFlag = 0;
-            for(i=0;i<pathcount;i++){
-                if (!(strcmp(fname, fileNames[i]))
-                    || checkpre(fileNames[i], fname)){
-                        extractFlag = 1;
+                /*Parse Path name*/
+                char fname[257] = {0};
+                char delim[2] = "/\0";
+                for(i=0;i<155;i++){
+                    if(head->prefix[i] != '\0'){
+                        fname[i] = head->prefix[i];
+                    }
+                    else{
                         break;
                     }
-            }
-            if((optMask & ALLFLAG)){
-                extractFlag = 1;
-            }
+                }
+                if(strlen(fname)){
+                    strcat(fname, delim);
+                }
+                strncat(fname, head->name, 100);
 
-            /*Check if the fileNames match */
-            if (extractFlag){
-                if(optMask & VERBOSE){
-                    printf("%s\n", fname);
+                /*Find type*/
+                int extractFlag = 0;
+                for(i=0;i<pathcount;i++){
+                    if (!(strcmp(fname, fileNames[i]))
+                        || checkpre(fileNames[i], fname)){
+                            extractFlag = 1;
+                            break;
+                        }
+                }
+                if((optMask & ALLFLAG)){
+                    extractFlag = 1;
                 }
 
-                if (head->typeflag == '5'){
-                    /* Checks if the file is a directory */
-                    if(DEBUG){
-                        printf("Extracting directory: %s\n", fname);
+                /*Check if the fileNames match */
+                if (extractFlag){
+                    if(optMask & VERBOSE){
+                        printf("%s\n", fname);
                     }
-                        extract_directory(fname, head);
-                }
-                else if ((head->typeflag == '0')||(head->typeflag == '\0')){
-                    /* Checks if the file is a REG file*/
-                    if(DEBUG){
-                        printf("Extracting File: %s\n", fname);
+
+                    if (head->typeflag == '5'){
+                        /* Checks if the file is a directory */
+                        if(DEBUG){
+                            printf("Extracting directory: %s\n", fname);
+                        }
+                            extract_directory(fname, head);
                     }
-                        extract_file(fname, head, fd);
-                        numblocks = 0;
-                }
-                else if (head->typeflag == '2'){
-                    /* Checks if the file is a SYMLNK file*/
-                    if(DEBUG){
-                        printf("Extracting SYMLNK: %s\n", fname);
+                    else if ((head->typeflag == '0')
+                        ||(head->typeflag == '\0')){
+                        /* Checks if the file is a REG file*/
+                        if(DEBUG){
+                            printf("Extracting File: %s\n", fname);
+                        }
+                            extract_file(fname, head, fd);
+                            numblocks = 0;
                     }
-                        extract_link(fname, head);
-                        numblocks = 0;
+                    else if (head->typeflag == '2'){
+                        /* Checks if the file is a SYMLNK file*/
+                        if(DEBUG){
+                            printf("Extracting SYMLNK: %s\n", fname);
+                        }
+                            extract_link(fname, head);
+                            numblocks = 0;
+                    }
                 }
             }
         }
