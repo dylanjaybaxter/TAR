@@ -209,7 +209,6 @@ void extract(char **fileNames, int pathcount,
         perror(archive);
         exit(EXIT_FAILURE);
     }
-    printf("Entering While Loop:");
     /*For each header in the file*/
     while((readsize = read(fd, buffer, 512)) > 0){
         if(DEBUG){
